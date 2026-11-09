@@ -16,6 +16,11 @@ and optional snapshot bytes. They carry prefix round-trip, canonical-prefix and 
 proofs. Complete-frame decoding accepts exactly canonical encodings and rejects trailing bytes. The
 Android host and examples are still in development.
 
+The Java Virtual Machine (JVM) protocol binding is tested against compiled Lean through the Java
+Native Interface (JNI). A control using existing cached artifacts checks complete semantic fixtures,
+malformed input and byte transport; targeted mutations check that faults are detected. The full
+Gradle test build requires completing its dependency cache.
+
 Build the Lean package with the pinned toolchain:
 
 ```sh

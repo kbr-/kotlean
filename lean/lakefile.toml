@@ -4,3 +4,7 @@ defaultTargets = ["Kotlean"]
 
 [[lean_lib]]
 name = "Kotlean"
+
+[[lean_lib]]
+name = "KotleanTest"
+srcDir = "../host/wire/src/test/lean"
