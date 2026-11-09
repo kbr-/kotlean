@@ -1,0 +1,9 @@
+.lake/
+.gradle/
+**/build/
+.idea/
+local.properties
+*.iml
+*.so
+*.apk
+*.aab
