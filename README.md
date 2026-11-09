@@ -21,6 +21,9 @@ Native Interface (JNI). A control using existing cached artifacts checks complet
 malformed input and byte transport; targeted mutations check that faults are detected. The full
 Gradle test build requires completing its dependency cache.
 
+The Lean property diff is proved to produce the new record while avoiding unchanged setters,
+duplicate updates and reordered fields.
+
 Build the Lean package with the pinned toolchain:
 
 ```sh
