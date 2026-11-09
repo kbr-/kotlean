@@ -21,8 +21,10 @@ tasks.named<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>("compileTestKotlin"
 }
 
 tasks.test {
+    val wireLibrary = providers.gradleProperty("wireLibrary")
+    inputs.file(wireLibrary).withPropertyName("wireLibrary")
     useJUnitPlatform()
     maxParallelForks = 1
-    systemProperty("kotlean.wire.library", providers.gradleProperty("wireLibrary").getOrElse(""))
+    systemProperty("kotlean.wire.library", wireLibrary.getOrElse(""))
     testLogging { exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL }
 }
