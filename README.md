@@ -11,9 +11,10 @@ Kotlean is in development. The interface below is the target API:
 Kotlean.run(this, "counter", savedInstanceState)
 ```
 
-Implemented: binary codec primitives for bytes, booleans, natural numbers, pairs, optional values
-and lists, with prefix round-trip, canonical-prefix and positive-length proofs. Complete-frame
-decoding rejects trailing bytes. The Android host and examples are still in development.
+Implemented: Lean codecs for platform events, view patches, drawing, commands, subscription changes
+and optional snapshot bytes. They carry prefix round-trip, canonical-prefix and positive-length
+proofs. Complete-frame decoding accepts exactly canonical encodings and rejects trailing bytes. The
+Android host and examples are still in development.
 
 Build the Lean package with the pinned toolchain:
 

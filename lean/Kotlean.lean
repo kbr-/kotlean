@@ -3,3 +3,6 @@ import Kotlean.Wire.Option
 import Kotlean.Wire.List
 import Kotlean.Wire.Frame
 import Kotlean.Wire.Scalar
+import Kotlean.Protocol
+import Kotlean.Wire.Input
+import Kotlean.Wire.Output

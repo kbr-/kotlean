@@ -1,0 +1,167 @@
+namespace Kotlean
+
+inductive NodeKind where
+  | column | row | text | button | input | scroll | canvas
+  deriving DecidableEq, Repr
+
+inductive TouchPhase where
+  | down | move | up | cancel
+  deriving DecidableEq, Repr
+
+structure Point where
+  x : Int
+  y : Int
+  deriving DecidableEq, Repr
+
+structure Contact where
+  id : Nat
+  point : Point
+  deriving DecidableEq, Repr
+
+structure TouchFrame where
+  phase : TouchPhase
+  changed : Nat
+  milliseconds : Nat
+  contacts : List Contact
+  deriving DecidableEq, Repr
+
+inductive Input where
+  | click
+  | text (value : String)
+  | touch (frame : TouchFrame)
+  | key (code : Nat) (down : Bool)
+  | resize (width height density : Nat)
+  deriving DecidableEq, Repr
+
+inductive Source where
+  | tick (milliseconds : Nat)
+  | back | pause | resume
+  deriving DecidableEq, Repr
+
+inductive Reply where
+  | ok (payload : List UInt8)
+  | error (message : String)
+  deriving DecidableEq, Repr
+
+inductive Event where
+  | node (revision id : Nat) (input : Input)
+  | answer (id : Nat) (reply : Reply)
+  | subscription (generation id : Nat) (payload : List UInt8)
+  | lifecycle (active : Bool)
+  | save
+  deriving DecidableEq, Repr
+
+inductive Effect where
+  | delay (milliseconds : Nat)
+  | read (key : String)
+  | write (key : String) (value : List UInt8)
+  | log (text : String)
+  | haptic
+  | clipboard (text : String)
+  | platform (name : String) (payload : List UInt8)
+  deriving DecidableEq, Repr
+
+structure Command where
+  id : Nat
+  effect : Effect
+  deriving DecidableEq, Repr
+
+structure Subscription where
+  id : Nat
+  generation : Nat
+  source : Source
+  deriving DecidableEq, Repr
+
+inductive Dimension where
+  | wrap
+  | fill
+  | dp (value : Nat)
+  deriving DecidableEq, Repr
+
+inductive Alignment where
+  | start | center | finish
+  deriving DecidableEq, Repr
+
+inductive Draw where
+  | clear (color : UInt32)
+  | rect (origin : Point) (width height radius : Nat) (color : UInt32)
+  | circle (center : Point) (radius : Nat) (color : UInt32)
+  | line (start finish : Point) (width : Nat) (color : UInt32)
+  | polygon (points : List Point) (color : UInt32)
+  | text (origin : Point) (size : Nat) (value : String) (color : UInt32)
+  deriving DecidableEq, Repr
+
+structure ListenerMask where
+  click : Bool := false
+  text : Bool := false
+  touch : Bool := false
+  key : Bool := false
+  resize : Bool := false
+  deriving DecidableEq, Repr
+
+structure Properties where
+  text : String := ""
+  hint : String := ""
+  foreground : UInt32 := 0xffffffff
+  background : UInt32 := 0
+  width : Dimension := .wrap
+  height : Dimension := .wrap
+  padding : Nat := 0
+  weight : Nat := 0
+  textSize : Nat := 16
+  enabled : Bool := true
+  description : String := ""
+  alignment : Alignment := .start
+  drawing : List Draw := []
+  listeners : ListenerMask := {}
+  deriving DecidableEq, Repr
+
+inductive Property where
+  | text (value : String)
+  | hint (value : String)
+  | foreground (value : UInt32)
+  | background (value : UInt32)
+  | width (value : Dimension)
+  | height (value : Dimension)
+  | padding (value : Nat)
+  | weight (value : Nat)
+  | textSize (value : Nat)
+  | enabled (value : Bool)
+  | description (value : String)
+  | alignment (value : Alignment)
+  | drawing (value : List Draw)
+  | listeners (value : ListenerMask)
+  deriving DecidableEq, Repr
+
+inductive Patch where
+  | create (id : Nat) (kind : NodeKind)
+  | property (id : Nat) (value : Property)
+  | insert (parent index child : Nat)
+  | remove (id : Nat)
+  | root (id : Option Nat)
+  deriving DecidableEq, Repr
+
+inductive SubscriptionChange where
+  | add (subscription : Subscription)
+  | remove (id generation : Nat)
+  deriving DecidableEq, Repr
+
+structure Output where
+  revision : Nat
+  patches : List Patch
+  commands : List Command
+  subscriptions : List SubscriptionChange
+  snapshot : Option (List UInt8)
+  deriving DecidableEq, Repr
+
+inductive Out where
+  | changes (value : Output)
+  | ignored (diagnostic : Option String)
+  | failed (message : String)
+  deriving DecidableEq, Repr
+
+structure InitInput where
+  snapshot : Option (List UInt8)
+  deriving DecidableEq, Repr
+
+end Kotlean
