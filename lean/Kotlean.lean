@@ -6,3 +6,4 @@ import Kotlean.Wire.Scalar
 import Kotlean.Protocol
 import Kotlean.Wire.Input
 import Kotlean.Wire.Output
+import Kotlean.View.Properties
