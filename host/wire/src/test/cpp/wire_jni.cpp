@@ -1,5 +1,19 @@
 // no_python: This exposes compiled Lean test oracles through the real JNI byte helpers.
 #include "kotlean_jni.hpp"
+#include <lean/mimalloc.h>
+#include <stdlib.h>
+#include <string.h>
+
+struct StatsBuffer { char* data; size_t size; };
+static void statsChunk(const char* message, void* argument) {
+    auto* buffer = static_cast<StatsBuffer*>(argument);
+    const size_t size = strlen(message);
+    auto* data = static_cast<char*>(realloc(buffer->data, buffer->size + size + 1));
+    if (!data) abort();
+    memcpy(data + buffer->size, message, size + 1);
+    buffer->data = data;
+    buffer->size += size;
+}
 
 extern "C" {
 lean_object* initialize_kotlean_KotleanTest_WireFixture(uint8_t);
@@ -51,5 +65,23 @@ JNIEXPORT jbyteArray JNICALL Java_io_kotlean_WireNative_echo(
     if (!input.get()) return nullptr;
     kotlean::jni::Owned output(kotlean_test_echo(input.release()));
     return kotlean::jni::toJava(env, output.get());
+}
+
+JNIEXPORT jbyteArray JNICALL Java_io_kotlean_WireNative_leakingEcho(
+    JNIEnv* env, jobject, jbyteArray bytes) {
+    if (!kotlean::jni::onOwnerThread(env)) return nullptr;
+    auto input = kotlean::jni::fromJava(env, bytes);
+    if (!input.get()) return nullptr;
+    auto* output = kotlean_test_echo(input.release());
+    return kotlean::jni::toJava(env, output);
+}
+
+JNIEXPORT jstring JNICALL Java_io_kotlean_WireNative_allocatorStats(JNIEnv* env, jobject) {
+    if (!kotlean::jni::onOwnerThread(env)) return nullptr;
+    StatsBuffer buffer{nullptr, 0};
+    mi_stats_print_out(statsChunk, &buffer);
+    jstring result = env->NewStringUTF(buffer.data ? buffer.data : "");
+    free(buffer.data);
+    return result;
 }
 }

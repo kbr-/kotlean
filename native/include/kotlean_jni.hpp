@@ -8,6 +8,11 @@
 
 namespace kotlean::jni {
 
+// fromJava creates one owned Lean reference. release transfers it to an owned exported argument,
+// which Lean consumes. A returned object is owned by its receiving Owned instance; toJava borrows
+// it while copying, then Owned releases it. Failure before transfer also releases the reference
+// through Owned.
+
 class Owned {
     lean_object* object_;
 public:

@@ -66,6 +66,15 @@ theorem prerequisite_count (c : Config) : (requirements c).length = 12 := rfl
 theorem output_in_build (c : Config) :
     destination c = c.project / "host/wire/build/native" / "libkotlean_wire_test.so" := rfl
 
+def memoryCommands (c : Config) : Array Command :=
+  #["stress", "leak"].map fun mode =>
+    ⟨(c.jdk / "bin/java").toString,
+      #["-Xms64m", "-Xmx64m", "-cp", (directory c / "classes").toString,
+        "io.kotlean.WireNative", (destination c).toString, mode], c.project⟩
+
+theorem memory_control_pair (c : Config) : (memoryCommands c).size = 2 := by
+  simp [memoryCommands]
+
 def execute (command : Command) : IO Unit := do
   IO.println s!"Running {command.executable} {String.intercalate " " command.arguments.toList}"
   let result ← IO.Process.output {
@@ -78,8 +87,9 @@ def execute (command : Command) : IO Unit := do
 end BuildWireNative
 
 def main (args : List String) : IO Unit := do
+  let (args, memoryTest) := if args.getLast? == some "--memory-test" then (args.dropLast, true) else (args, false)
   let [project, toolchain, jdk] := args
-    | throw (IO.userError "Usage: lean --run tools/BuildWireNative.lean PROJECT TOOLCHAIN JDK")
+    | throw (IO.userError "Usage: lean --run tools/BuildWireNative.lean PROJECT TOOLCHAIN JDK [--memory-test]")
   let config : BuildWireNative.Config := ⟨project, toolchain, jdk⟩
   let mut missing := []
   for path in BuildWireNative.requirements config do
@@ -91,3 +101,7 @@ def main (args : List String) : IO Unit := do
   for command in commands do BuildWireNative.execute command
   IO.FS.rename (BuildWireNative.temporary config) (BuildWireNative.destination config)
   IO.println s!"Native wire library: {BuildWireNative.destination config}"
+  if memoryTest then
+    let tasks ← (BuildWireNative.memoryCommands config).mapM fun command =>
+      IO.asTask (BuildWireNative.execute command)
+    for task in tasks do IO.ofExcept task.get

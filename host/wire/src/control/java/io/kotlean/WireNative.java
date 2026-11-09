@@ -9,14 +9,30 @@ public final class WireNative {
     private static native byte[] output(long seed);
     private static native boolean acceptsOut(byte[] bytes);
     private static native byte[] echo(byte[] bytes);
+    private static native byte[] leakingEcho(byte[] bytes);
+    private static native String allocatorStats();
 
     private static void require(boolean condition, String message) {
         if (!condition) throw new AssertionError(message);
     }
 
     public static void main(String[] args) {
-        if (args.length != 1) throw new IllegalArgumentException("Expected native library path");
+        if (args.length < 1 || args.length > 2) throw new IllegalArgumentException("Expected native library path [stress|leak]");
         System.load(args[0]);
+        if (args.length == 2) {
+            byte[] bytes = new byte[8192];
+            Arrays.fill(bytes, (byte) 37);
+            for (int i = 0; i < 10000; i++) require(Arrays.equals(echo(bytes), bytes), "warmup");
+            System.out.println("ALLOCATOR WARM " + args[1] + "\n" + allocatorStats());
+            for (int phase = 1; phase <= 2; phase++) {
+                for (int i = 0; i < 50000; i++) {
+                    byte[] result = args[1].equals("leak") ? leakingEcho(bytes) : echo(bytes);
+                    require(Arrays.equals(result, bytes), "stress bytes");
+                }
+                System.out.println("ALLOCATOR PHASE " + phase + " " + args[1] + "\n" + allocatorStats());
+            }
+            return;
+        }
         require(matchesEvent(4, new byte[]{4, 0}), "valid save event rejected");
         require(!matchesEvent(0, new byte[]{4, 0}), "wrong semantic event accepted");
         require(matchesInit(0, new byte[]{0}), "valid absent snapshot rejected");
