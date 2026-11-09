@@ -9,3 +9,4 @@ import Kotlean.Wire.Output
 import Kotlean.View.Properties
 import Kotlean.View.Scene
 import Kotlean.View.SceneProofs
+import Kotlean.View.Diff
