@@ -1,5 +1,5 @@
 // no_python: Gradle requires a Kotlin DSL settings entry point.
-pluginManagement { repositories { google(); mavenCentral(); gradlePluginPortal() } }
+pluginManagement { repositories { google(); mavenCentral() } }
 dependencyResolutionManagement { repositories { google(); mavenCentral() } }
 rootProject.name = "kotlean"
 include(":wire")

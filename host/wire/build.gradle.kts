@@ -6,13 +6,18 @@ kotlin {
     compilerOptions {
         jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
         allWarningsAsErrors.set(true)
-        optIn.add("io.kotest.common.ExperimentalKotest")
     }
 }
 
 dependencies {
     testImplementation("io.kotest:kotest-runner-junit5:6.2.6")
     testImplementation("io.kotest:kotest-property:6.2.6")
+}
+
+tasks.withType<JavaCompile>().configureEach { options.release.set(17) }
+
+tasks.named<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>("compileTestKotlin") {
+    compilerOptions.optIn.add("io.kotest.common.ExperimentalKotest")
 }
 
 tasks.test {
