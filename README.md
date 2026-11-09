@@ -8,7 +8,7 @@ native code and run it behind a small Kotlin host.
 Kotlean is in development. The interface below is the target API:
 
 ```kotlin
-Kotlean.run(this, "counter")
+Kotlean.run(this, "counter", savedInstanceState)
 ```
 
 The design uses `init`, `update`, `view` and `subscriptions`. App-specific models and messages stay
