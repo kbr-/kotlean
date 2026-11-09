@@ -1,0 +1,6 @@
+name = "kotlean"
+version = "0.1.0"
+defaultTargets = ["Kotlean"]
+
+[[lean_lib]]
+name = "Kotlean"

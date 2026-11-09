@@ -11,6 +11,17 @@ Kotlean is in development. The interface below is the target API:
 Kotlean.run(this, "counter", savedInstanceState)
 ```
 
+Implemented: binary codec primitives for bytes, booleans, natural numbers, pairs, optional values
+and lists, with prefix round-trip, canonical-prefix and positive-length proofs. Complete-frame
+decoding rejects trailing bytes. The Android host and examples are still in development.
+
+Build the Lean package with the pinned toolchain:
+
+```sh
+cd lean
+lake build
+```
+
 The design uses `init`, `update`, `view` and `subscriptions`. App-specific models and messages stay
 in Lean. A fixed byte protocol carries platform events in and view patches, commands and
 subscription changes out. Android Views render the result.
