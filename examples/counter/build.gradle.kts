@@ -7,6 +7,8 @@ plugins {
 android {
     namespace = "io.kotlean.counter"
     compileSdk = 37
+    ndkVersion = "30.0.16248370"
+    ndkPath = providers.environmentVariable("ANDROID_NDK_HOME").orNull
     defaultConfig {
         applicationId = "io.kotlean.counter"
         minSdk = 26

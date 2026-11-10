@@ -1,0 +1,10 @@
+name = "snacknet"
+version = "0.1.0"
+defaultTargets = ["SnackNet"]
+
+[[require]]
+name = "kotlean"
+path = "../../../lean"
+
+[[lean_lib]]
+name = "SnackNet"
