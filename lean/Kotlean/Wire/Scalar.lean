@@ -49,7 +49,7 @@ theorem colorProject_sound (raw : Nat) (value : UInt32)
 def color : Codec UInt32 := adapt natural UInt32.toNat colorProject
   colorProject_toNat colorProject_sound
 
-def utf8Bytes (value : String) : List UInt8 := value.toByteArray.data.toList
+def utf8Bytes (value : String) : List UInt8 := value.toUTF8.data.toList
 
 def utf8Project (value : List UInt8) : Option String :=
   String.fromUTF8? ⟨value.toArray⟩
