@@ -51,6 +51,14 @@ keep app-specific model and message types in Lean. JVM controls run both numeric
 through updates, saving, restoration and closing. Linux ownership controls compare repeated starts,
 updates and frees with deliberately retained states.
 
+The Lean build executable resolves an app package through Lake and cross-compiles its generated C
+for Android arm64/API 26. It generates Init and Std with the pinned compiler, checks authored
+objects for libc replacements and reuses a complete standard-library archive after checking its
+inputs and bytes. A physical Android device has passed the text-model JNI control. The Android
+runtime [patch](native/android/object-full-pointers.patch) keeps full pointers in the deletion
+worklist so heap pointer tags survive deallocation. Lean's runtime retains its [Apache 2.0
+license](native/android/LEAN-LICENSE.txt).
+
 Build the Lean package with the pinned toolchain:
 
 ```sh
