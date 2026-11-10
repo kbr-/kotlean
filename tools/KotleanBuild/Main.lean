@@ -10,8 +10,10 @@ def requiredEnv (name : String) : IO String := do
   return value
 
 def main (args : List String) : IO Unit := do
-  let ["build", package, moduleText, output] := args
-    | throw (IO.userError "Usage: kotlean build PACKAGE MODULE|auto OUTPUT")
+  let (operation, package, moduleText, output) ← match args with
+    | ["build", package, moduleText, output] => pure ("build", package, moduleText, output)
+    | ["inputs", package, moduleText] => pure ("inputs", package, moduleText, "")
+    | _ => throw (IO.userError "Usage: kotlean build PACKAGE MODULE|auto OUTPUT; kotlean inputs PACKAGE MODULE|auto")
   let base ← IO.currentDir
   let package := base / package
   let output := base / output
@@ -53,6 +55,35 @@ def main (args : List String) : IO Unit := do
     catch _ => missing := missing ++ [command]
   let .ok _ := preflight missing ["package", "standard", "runtime", "link"]
     | throw (IO.userError s!"Missing prerequisite: {missing.head!}")
+  if operation == "inputs" then
+    let emit := fun (file : FilePath) => IO.print (file.toString ++ "\u0000")
+    let emitDirectory := fun (directory : FilePath) => do
+      for file in ← directory.walkDir do
+        unless (← file.isDir) do emit file
+    let previous ← IO.currentDir
+    let data ← try
+      IO.Process.setCurrentDir package
+      Runner.execute (toolchain / "bin/lake").toString #["--json", "query", s!"+{moduleName}:transImports"]
+    finally
+      IO.Process.setCurrentDir previous
+    let .ok imports := Lean.Json.parse data.trimAscii.toString >>= Lean.fromJson? (α := Array String)
+      | throw (IO.userError "Lake returned an invalid module-dependency result")
+    for name in #[moduleName.toString] ++ imports do
+      let some module := workspace.findModule? name.toName
+        | throw (IO.userError s!"Lake module disappeared: {name}")
+      emit module.leanFile
+    for pkg in workspace.packages do
+      for name in ["lakefile.lean", "lakefile.toml", "lake-manifest.json", "lean-toolchain"] do
+        let path := pkg.dir / name
+        if ← path.pathExists then emit path
+    for file in prerequisites do emit file
+    emit (← IO.appPath)
+    emit (toolchain / "lib/lean/libleanshared.so")
+    for directory in [project / "native", project / "tools", runtime / "src",
+        libuv / "include", toolchain / "src/lean/Init", toolchain / "src/lean/Std",
+        project / "lean/.lake/build/lib/lean/KotleanBuild"] do
+      emitDirectory directory
+    return
   IO.FS.createDirAll work
   let cacheLock ← IO.FS.Handle.mk (work / ".build.lock") .append
   cacheLock.lock
