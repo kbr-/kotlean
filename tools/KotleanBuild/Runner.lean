@@ -57,7 +57,7 @@ def buildUnit (toolchain ndk work sourceRoot source : FilePath) (context headers
     (toolchain / "bin/lean").toString
     #["-j1", "--root=" ++ sourceRoot.toString, "-c", (work / generated).toString, source.toString]
   let cDigest ← digest (work / generated)
-  let compilation : Signature := ⟨1, context, .androidArm64, "r30-api26", "", 
+  let compilation : Signature := ⟨1, context, .androidArm64, "r30-api26", "",
     ["-O2", "-fPIC", "-ffunction-sections", "-fdata-sections"],
     [⟨generated.toString, cDigest⟩, ⟨"headers", headers⟩]⟩
   let objReceipt := work / "receipts/obj" / relative.withExtension "json"
