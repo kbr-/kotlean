@@ -9,12 +9,20 @@ android {
     compileSdk = 37
     ndkVersion = "30.0.16248370"
     ndkPath = providers.environmentVariable("ANDROID_NDK_HOME").orNull
+    buildFeatures { buildConfig = true }
     defaultConfig {
         applicationId = "io.kotlean.snacknet"
         minSdk = 26
         targetSdk = 37
         versionCode = 1
         versionName = "1.0"
+        buildConfigField("boolean", "DEVICE_TEST", "false")
+    }
+    buildTypes {
+        debug {
+            val deviceTest = providers.gradleProperty("snacknetDeviceTest").orNull == "true"
+            buildConfigField("boolean", "DEVICE_TEST", deviceTest.toString())
+        }
     }
 }
 
