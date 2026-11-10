@@ -1,0 +1,10 @@
+name = "counter"
+version = "0.1.0"
+defaultTargets = ["Counter"]
+
+[[require]]
+name = "kotlean"
+path = "../../../lean"
+
+[[lean_lib]]
+name = "Counter"
