@@ -1,5 +1,36 @@
 --- a/src/runtime/object.cpp
 +++ b/src/runtime/object.cpp
+@@ -10,6 +10,9 @@
+ #include <vector>
+ #include <deque>
+ #include <cmath>
++#ifdef __ANDROID__
++#include <android/log.h>
++#endif
+ #include <lean/lean.h>
+ #include "runtime/object.h"
+ #include "runtime/thread.h"
+@@ -90,6 +93,9 @@
+ FILE * g_saved_stderr = stderr;
+ 
+ extern "C" LEAN_EXPORT void lean_internal_panic(char const * msg) {
++#ifdef __ANDROID__
++    __android_log_write(ANDROID_LOG_FATAL, "Kotlean", msg);
++#endif
+     fprintf(g_saved_stderr, "INTERNAL PANIC: %s\n", msg);
+     abort_on_panic();
+     std::exit(1);
+@@ -129,6 +135,10 @@
+ }
+ 
+ static void panic_eprintln(char const * line, size_t size, bool force_stderr) {
++#ifdef __ANDROID__
++    __android_log_print(ANDROID_LOG_ERROR, "Kotlean", "%.*s",
++                        static_cast<int>(std::min<size_t>(size, 4096)), line);
++#endif
+     if (force_stderr || g_exit_on_panic || should_abort_on_panic()) {
+         // If we are about to kill the process, we should skip the Lean stderr buffer
+         std::cerr.write(line, size) << "\n";
 @@ -278,60 +278,20 @@
      }
  }

@@ -11,14 +11,17 @@ inductive Msg where
   | addLater
   deriving Repr, DecidableEq
 
-def view (count : Nat) : Kotlean.Ui Msg :=
+def controls (count : Nat) (increment decrement addLater : msg) : Kotlean.Ui msg :=
   .column { width := .fill, padding := 20 }
     [ .text { text := "Kotlean counter", textSize := 20 },
       .text { text := toString count, textSize := 40, padding := 12 },
       .row { padding := 8 }
-        [ .button { text := "−", events := { click := some .decrement } },
-          .button { text := "+", events := { click := some .increment } },
-          .button { text := "Add later", events := { click := some .addLater } } ] ]
+        [ .button { text := "−", events := { click := some decrement } },
+          .button { text := "+", events := { click := some increment } },
+          .button { text := "Add later", events := { click := some addLater } } ] ]
+
+def view (count : Nat) : Kotlean.Ui Msg :=
+  controls count .increment .decrement .addLater
 
 theorem view_valid (count : Nat) : Kotlean.View.Canonical.valid (Kotlean.Ui.compile (view count)).scene :=
   Kotlean.Ui.compile_canonical _

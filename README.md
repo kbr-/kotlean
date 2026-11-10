@@ -5,16 +5,16 @@
 Write an Android app's model, updates, views and effect descriptions in Lean. Compile that Lean to
 native code and run it behind a small Kotlin host.
 
-Kotlean is in development. The interface below is the target API:
+Call the host from `Activity.onCreate` after `super.onCreate`.
 
 ```kotlin
 Kotlean.run(this, "counter", savedInstanceState)
 ```
 
-Implemented: Lean codecs for platform events, view patches, drawing, commands, subscription changes
-and optional snapshot bytes. They carry prefix round-trip, canonical-prefix and positive-length
-proofs. Complete-frame decoding accepts exactly canonical encodings and rejects trailing bytes. The
-Android host and examples are still in development.
+Lean codecs cover platform events, view patches, drawing, commands, subscription changes and
+optional snapshot bytes. They carry prefix round-trip, canonical-prefix and positive-length proofs.
+Complete-frame decoding accepts exactly canonical encodings and rejects trailing bytes. The Android
+host applies the patches to native Views and gives the Activity ownership of the session.
 
 The Java Virtual Machine (JVM) protocol binding is tested against compiled Lean through the Java
 Native Interface (JNI). A control using existing cached artifacts checks complete semantic fixtures,
@@ -66,6 +66,21 @@ cd lean
 lake build
 ```
 
+Build the counter from the repository root with JDK 21, Gradle 9.9 and Android SDK 37. Run
+`lake build kotlean` in `lean/` and point `KOTLEAN_BUILD` to the resulting executable in
+`lean/.lake/build/bin/`. Set `KOTLEAN_TOOLCHAIN` to the installed Lean toolchain,
+`KOTLEAN_LEAN_SOURCE` to its matching source checkout, `ANDROID_NDK_HOME` to NDK r30,
+`KOTLEAN_LIBUV_SOURCE` to the Android arm64 libuv build tree, and `KOTLEAN_CACHE` to a writable
+native build cache. The libuv tree must contain `build/libuv.a`. Set `ANDROID_HOME` to the SDK.
+
+```sh
+gradle --no-daemon :counter:assembleDebug
+```
+
+The `io.kotlean` Gradle plugin discovers Lean inputs and packages the generated native library. The
+APK is at `examples/counter/build/outputs/apk/debug/counter-debug.apk`. The counter keeps its count
+and note in Lean, requests a delayed increment and persists the result in private storage.
+
 The design uses `init`, `update`, `view` and `subscriptions`. App-specific models and messages stay
 in Lean. A fixed byte protocol carries platform events in and view patches, commands and
 subscription changes out. Android Views render the result.
@@ -82,10 +97,7 @@ transaction buffer across the process's transactions.
 Development targets: Lean 4.34.0, Android Native Development Kit (NDK) r30, Android API 26 or later,
 compile Software Development Kit (SDK) 37.
 
-Planned examples:
-
-- **Counter:** the single-call host with buttons, persistence and a delayed command.
-- **SnackNet:** an artificial intelligence (AI) maze-chase game. Collect tokens, evade human
-  operators and pick up **Overclock** to reverse the chase.
+SnackNet is the planned maze-chase example. Collect tokens, evade human operators and pick up
+**Overclock** to reverse the chase.
 
 Licensed under the [MIT License](LICENSE).
