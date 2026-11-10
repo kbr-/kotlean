@@ -40,6 +40,11 @@ Typed Lean views support column, row, text, button, input, scroll and canvas, wi
 outside the rendered scene. Compilation is proved to produce canonical preorder scenes and matching
 handler registries; changing only handler closures preserves the rendered scene.
 
+The pure Lean app runtime has proofs for current-view dispatch, one-shot continuations, subscription
+reconciliation, suspension of ticks while inactive, save/restore and controlled text edits. Accepted
+edits on surviving inputs emit no text setter. See the [runtime
+laws](lean/Kotlean/Runtime/Laws.lean) and [proofs](lean/Kotlean/Runtime/Verified.lean).
+
 Build the Lean package with the pinned toolchain:
 
 ```sh
