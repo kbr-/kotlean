@@ -32,6 +32,10 @@ removal and root selection. The scene diff generator has proofs that unchanged s
 and ids with unchanged kinds are never removed or recreated. Unchanged structure permits property
 setters only; full application correctness remains unproved.
 
+Scene diff endpoints use dense zero-based preorder ids: walking the root and its ordered children
+visits 0 through the node count minus one. A nonempty scene has root 0, each nonroot has one parent,
+scroll has at most one child, and leaves have none; an empty scene has no root.
+
 Build the Lean package with the pinned toolchain:
 
 ```sh
