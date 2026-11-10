@@ -5,19 +5,25 @@ public import Std
 
 namespace SnackNet
 
-abbrev width : Nat := 11
-abbrev height : Nat := 9
+abbrev width : Nat := 15
+abbrev height : Nat := 13
+def operatorStride : Nat := 2
 
 def maze : Array (Array Char) := #[
-    #['#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#'],
-    #['#', 'S', '*', '.', '#', '.', '.', '*', '*', 'E', '#'],
-    #['#', '.', '#', '.', '#', '.', '#', '#', '.', '.', '#'],
-    #['#', '.', '#', '*', '*', '.', '#', '.', '.', '.', '#'],
-    #['#', '*', '.', '.', '#', '.', '#', '.', '#', '.', '#'],
-    #['#', '#', '#', '.', '#', '*', '.', '.', '#', '.', '#'],
-    #['#', '.', '.', '.', '#', '#', '#', '.', '#', '.', '#'],
-    #['#', 'O', '*', '.', '.', 'P', '*', '.', '.', 'O', '#'],
-    #['#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#']]
+    #['#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#'],
+    #['#', 'S', '*', '.', '.', '.', '#', '.', '.', '*', '.', '.', '.', 'E', '#'],
+    #['#', '.', '#', '#', '#', '.', '#', '.', '#', '#', '#', '.', '#', '.', '#'],
+    #['#', '*', '#', '.', '.', '.', '*', '.', '.', '.', '#', '.', '*', '.', '#'],
+    #['#', '.', '#', '.', '#', '#', '#', '#', '#', '.', '#', '#', '#', '.', '#'],
+    #['#', '.', '.', '.', '*', '.', '.', '.', '#', '.', '.', '*', '.', '.', '#'],
+    #['#', '#', '#', '.', '#', '#', '#', '.', '#', '.', '#', '#', '#', '.', '#'],
+    #['#', '*', '.', '.', '#', '.', '.', '.', 'P', '.', '.', '.', '#', '*', '#'],
+    #['#', '.', '#', '.', '#', '.', '#', '#', '#', '#', '#', '.', '#', '.', '#'],
+    #['#', '.', '#', '.', '*', '.', '.', '.', '*', '.', '.', '.', '#', '.', '#'],
+    #['#', '.', '#', '#', '#', '#', '#', '.', '#', '.', '#', '#', '#', '.', '#'],
+    #['#', 'O', '.', '.', '.', '*', '.', '.', '#', '.', '.', '*', '.', 'O', '#'],
+    #['#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#']
+  ]
 
 def tile (x y : Nat) : Char := (maze[y]?.getD #[])[x]?.getD '#'
 
@@ -32,10 +38,10 @@ def cellAt (x y : Nat) : Option Cell :=
   else none
 
 def playerStart : Cell := ⟨(1, 1), by decide +kernel⟩
-def leftStart : Cell := ⟨(1, 7), by decide +kernel⟩
-def rightStart : Cell := ⟨(9, 7), by decide +kernel⟩
-def exitCell : Cell := ⟨(9, 1), by decide +kernel⟩
-def powerCell : Cell := ⟨(5, 7), by decide +kernel⟩
+def leftStart : Cell := ⟨(1, 11), by decide +kernel⟩
+def rightStart : Cell := ⟨(13, 11), by decide +kernel⟩
+def exitCell : Cell := ⟨(13, 1), by decide +kernel⟩
+def powerCell : Cell := ⟨(8, 7), by decide +kernel⟩
 
 def initialTokens : List Cell :=
   (List.range height).flatMap fun y =>
@@ -138,7 +144,7 @@ def settle (game : Game) : Game :=
 
 def moveActors (game : Game) (planned : Option (List Operator) := none) : Game :=
   if contact game then settle game
-  else if game.beat = 2 then
+  else if game.beat + 1 = operatorStride then
     let operators := match planned with
       | some operators => operators
       | none => planOperators game none
@@ -157,7 +163,7 @@ def tick (direction : Option Direction) (game : Game)
       pickupAvailable := game.pickupAvailable && !pickup } planned
     { moved with
       power := moved.power - 1
-      beat := (moved.beat + 1) % 3
+      beat := (moved.beat + 1) % operatorStride
       phase := if moved.phase = .running ∧ moved.tokens.isEmpty ∧ moved.player = exitCell
         then .won else moved.phase }
   else game

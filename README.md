@@ -114,14 +114,15 @@ SnackNet is a maze-chase game with an AI machine pursued by human operators. Ste
 tapping the arrows or using directional keys. The machine moves continuously between cells and
 queues a turn until the next junction where it can take it. One operator tracks the machine and
 the other aims ahead of it. Both periodically patrol and keep moving through corridors. Collect
-all nine data tokens to open the exit. Pick up **Overclock** to transform the machine into a metal
-endoskeleton and reverse the chase. The Lean rules prove that a successful step reaches a
+all thirteen data tokens in the 15-by-13 maze to open the exit. Pick up **Overclock** to transform
+the machine into a metal endoskeleton and reverse the chase. The Lean rules prove that a successful step reaches a
 neighboring traversable cell, tokens never increase during a run and a powered tick preserves
 the player's lives.
 
-A Pixel 11 Pro run recorded 87 consecutive presentation timestamps over 1.43 seconds of play
-at 60.05 frames per second, with a maximum interval of 16.69 ms. For foreground device testing,
-build the debug variant with `-PsnacknetDeviceTest=true`. The flag is off in default debug and
+A complete Pixel 11 Pro playthrough finished with 130 points and three lives. Android reported
+917 rendered frames and zero janky frames after reset. The final 114 consecutive presentation
+timestamps ran at 60.05 frames per second with a maximum interval of 16.68 ms. For foreground
+device testing, build the debug variant with `-PsnacknetDeviceTest=true`. The flag is off in default debug and
 release builds.
 
 Licensed under the [MIT License](LICENSE).

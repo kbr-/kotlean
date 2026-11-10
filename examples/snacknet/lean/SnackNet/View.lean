@@ -52,10 +52,11 @@ def advanceFrame (now : Nat) (model : Model) : Model :=
     if progress < cellTime then { model with travel, progress, operatorsInTransit := plan }
     else
       let game := tick travel model.game plan
+      let operatorsArrived := model.game.beat + 1 == operatorStride
       let reset := game.lives != model.game.lives ||
-        (model.game.beat != 2 && game.operators != model.game.operators)
+        (!operatorsArrived && game.operators != model.game.operators)
       let game := if reset then { game with beat := 0 } else game
-      let plan := if reset || model.game.beat == 2 then none else plan
+      let plan := if reset || operatorsArrived then none else plan
       let arrived := { model with game, travel, operatorsInTransit := plan }
       if game.lives != model.game.lives || game.phase != .running then
         { arrived with progress := 0, travel := none, operatorsInTransit := none }
@@ -155,9 +156,11 @@ def boardTiles (board : BoardView) : List Draw :=
       let color : UInt32 := if tile x y = '#' then 0xff343f6e else 0xff202841
       .rect (board.point x y) (board.side - 1000) (board.side - 1000) (board.side / 12) color
 
-def human (board : BoardView) (atPoint : Nat → Nat → Point) (powered : Bool) : List Draw :=
+def human (board : BoardView) (atPoint : Nat → Nat → Point) (powered interceptor : Bool) :
+    List Draw :=
   let s := board.side
-  let coat : UInt32 := if powered then 0xffab99e9 else 0xffffb054
+  let coat : UInt32 := if powered then 0xffab99e9
+    else if interceptor then 0xfff0788c else 0xffffb054
   [ .circle (atPoint 5 3) (s / 6) 0xffffddb4
   , .rect (atPoint 2 5) (s * 6 / 10) (s * 4 / 10) (s / 10) coat
   , .line (atPoint 5 6) (atPoint 5 8) (s / 14) 0xff22203a ]
@@ -188,8 +191,8 @@ def drawing (model : Model) : List Draw :=
   let operators := model.operatorsInTransit.getD game.operators
   let humans := (game.operators.zip operators).flatMap fun (operator, next) =>
     let elapsed := game.beat * cellTime + model.progress
-    human board (board.between operator.position next.position elapsed (3 * cellTime))
-      (game.power > 0)
+    human board (board.between operator.position next.position elapsed (operatorStride * cellTime))
+      (game.power > 0) (operator.start == rightStart)
   [.clear 0xff101522] ++ boardTiles board ++ [gate] ++ tokens ++ pickup ++ humans ++
     robot board (board.between game.player playerTarget model.progress cellTime) game
 
