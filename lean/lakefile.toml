@@ -8,3 +8,25 @@ name = "Kotlean"
 [[lean_lib]]
 name = "KotleanTest"
 srcDir = "../host/wire/src/test/lean"
+
+[[lean_lib]]
+name = "KotleanBuild"
+srcDir = "../tools"
+
+[[lean_exe]]
+name = "kotlean"
+root = "KotleanBuild.Main"
+srcDir = "../tools"
+moreLinkArgs = ["-lLake"]
+
+[[lean_lib]]
+name = "ExportNat"
+srcDir = "../host/wire/src/test/lean"
+
+[[lean_lib]]
+name = "ExportText"
+srcDir = "../host/wire/src/test/lean"
+
+[[lean_lib]]
+name = "ExportFailure"
+srcDir = "../host/wire/src/test/lean"

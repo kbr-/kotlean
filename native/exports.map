@@ -4,10 +4,5 @@
     Java_io_kotlean_NativeSession_start;
     Java_io_kotlean_NativeSession_step;
     Java_io_kotlean_NativeSession_close;
-    Java_io_kotlean_AppAllocator_stats;
-    Java_io_kotlean_AppAllocator_retain;
-    Java_io_kotlean_AppAllocator_references;
-    Java_io_kotlean_AppAllocator_trackModel;
-    Java_io_kotlean_AppAllocator_releaseModel;
   local: *;
 };

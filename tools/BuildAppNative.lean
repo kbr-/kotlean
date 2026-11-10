@@ -19,7 +19,7 @@ def requirements (c : Config) : List System.FilePath := [
   c.toolchain / "bin/lake", c.toolchain / "bin/leanc", c.toolchain / "include/lean/lean.h",
   c.toolchain / "lib/lean/libleanshared.so", c.jdk / "include/jni.h", c.jdk / "include/linux/jni_md.h",
   c.project / "lean/lakefile.toml", c.project / "native/app_jni.cpp",
-  c.project / "native/include/kotlean_jni.hpp", c.project / "native/exports.map",
+  c.project / "native/include/kotlean_jni.hpp", c.project / "host/wire/src/test/cpp/app_exports.map",
   c.project / "host/wire/src/test/cpp/app_memory.cpp", c.source
 ]
 
@@ -48,7 +48,7 @@ def commands (c : Config) : Array Command := #[
     #["-shared", "-fPIC", c.output.toString ++ ".jni.o", c.output.toString ++ ".app.o",
       c.output.toString ++ ".probe.o",
       "-Wl,-z,defs", "-Wl,--gc-sections",
-      "-Wl,--version-script=" ++ (c.project / "native/exports.map").toString,
+      "-Wl,--version-script=" ++ (c.project / "host/wire/src/test/cpp/app_exports.map").toString,
       (c.project / "lean/.lake/build/lib/libkotlean_Kotlean.a").toString,
       "-L" ++ (c.toolchain / "lib/lean").toString, "-lleanshared",
       "-Wl,-rpath," ++ (c.toolchain / "lib/lean").toString,
