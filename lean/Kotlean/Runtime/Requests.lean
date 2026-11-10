@@ -1,5 +1,7 @@
-import Kotlean.App
-import Std.Data.ExtTreeMap.Lemmas
+module
+public import Kotlean.App
+
+@[expose] public section
 
 namespace Kotlean.Runtime
 

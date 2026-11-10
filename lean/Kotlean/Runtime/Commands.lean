@@ -1,4 +1,7 @@
-import Kotlean.Runtime.State
+module
+public import Kotlean.Runtime.State
+
+@[expose] public section
 
 namespace Kotlean.Runtime.RequestState
 

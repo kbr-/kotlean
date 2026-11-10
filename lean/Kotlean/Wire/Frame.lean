@@ -1,4 +1,7 @@
-import Kotlean.Wire.Codec
+module
+public import Kotlean.Wire.Codec
+
+@[expose] public section
 
 namespace Kotlean.Wire
 

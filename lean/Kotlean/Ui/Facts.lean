@@ -1,5 +1,8 @@
-import Kotlean.Ui.Compile
-import Kotlean.View.Application
+module
+public import Kotlean.Ui.Compile
+public import Kotlean.View.Application
+
+@[expose] public section
 
 namespace Kotlean.Ui
 

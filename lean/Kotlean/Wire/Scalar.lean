@@ -1,6 +1,9 @@
-import Kotlean.Wire.Adapt
-import Kotlean.Wire.Basic
-import Kotlean.Wire.List
+module
+public import Kotlean.Wire.Adapt
+public import Kotlean.Wire.Basic
+public import Kotlean.Wire.List
+
+@[expose] public section
 
 namespace Kotlean.Wire
 

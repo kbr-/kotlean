@@ -1,5 +1,7 @@
-import Kotlean.Runtime.Observation
-import Kotlean.View.Diff
+module
+public import Kotlean.Runtime.Observation
+
+@[expose] public section
 
 namespace Kotlean.View.Canonical
 

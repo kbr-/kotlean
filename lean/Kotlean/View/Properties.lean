@@ -1,4 +1,7 @@
-import Kotlean.Protocol
+module
+public import Kotlean.Protocol
+
+@[expose] public section
 
 namespace Kotlean.View
 
@@ -18,7 +21,7 @@ def applyProperty (property : Property) (old : Properties) : Properties := match
   | .drawing value => { old with drawing := value }
   | .listeners value => { old with listeners := value }
 
-private def changed {α : Type} [BEq α] (old new : α) (property : Property) : List Property :=
+def changed {α : Type} [BEq α] (old new : α) (property : Property) : List Property :=
   if equal old new then [] else [property]
 
 private theorem mem_changed {α : Type} [BEq α] [LawfulBEq α] [DecidableEq α] (old new : α) (candidate property : Property) :

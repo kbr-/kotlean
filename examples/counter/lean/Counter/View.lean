@@ -1,4 +1,7 @@
-import Kotlean
+module
+public import Kotlean
+
+@[expose] public section
 
 namespace Counter
 

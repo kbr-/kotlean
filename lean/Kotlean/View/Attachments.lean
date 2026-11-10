@@ -1,4 +1,7 @@
-import Kotlean.View.Application
+module
+public import Kotlean.View.Application
+
+@[expose] public section
 
 namespace Kotlean.View.Attachments
 

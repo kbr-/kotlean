@@ -1,35 +1,38 @@
-import Kotlean.Wire.Input
-import Kotlean.Wire.Option
+module
+public import Kotlean.Wire.Input
+public import Kotlean.Wire.Option
+
+@[expose] public section
 
 namespace Kotlean.Wire
 
-private def dimensionValue : Dimension → UInt8 × List UInt8
+def dimensionValue : Dimension → UInt8 × List UInt8
   | .wrap => (0, []) | .fill => (1, []) | .dp value => (2, natural.write value)
 
-private def parseDimension (value : UInt8 × List UInt8) : Option Dimension :=
+def parseDimension (value : UInt8 × List UInt8) : Option Dimension :=
   if value.1 = 0 then some .wrap else if value.1 = 1 then some .fill
   else if value.1 = 2 then (decode natural value.2).map Dimension.dp else none
 
 def dimension : Codec Dimension := checked envelope dimensionValue parseDimension
   (by intro value; cases value <;> simp [dimensionValue, parseDimension, decode_write])
 
-private def alignmentValue : Alignment → UInt8 × List UInt8
+def alignmentValue : Alignment → UInt8 × List UInt8
   | .start => (0, []) | .center => (1, []) | .finish => (2, [])
 
-private def parseAlignment (value : UInt8 × List UInt8) : Option Alignment :=
+def parseAlignment (value : UInt8 × List UInt8) : Option Alignment :=
   if value.1 = 0 then some .start else if value.1 = 1 then some .center
   else if value.1 = 2 then some .finish else none
 
 def alignment : Codec Alignment := checked envelope alignmentValue parseAlignment
   (by intro value; cases value <;> decide)
 
-private def rectFields := pair point (pair natural (pair natural (pair natural color)))
-private def circleFields := pair point (pair natural color)
-private def lineFields := pair point (pair point (pair natural color))
-private def polygonFields := pair (list point) color
-private def textFields := pair point (pair natural (pair text color))
+def rectFields := pair point (pair natural (pair natural (pair natural color)))
+def circleFields := pair point (pair natural color)
+def lineFields := pair point (pair point (pair natural color))
+def polygonFields := pair (list point) color
+def textFields := pair point (pair natural (pair text color))
 
-private def drawValue : Draw → UInt8 × List UInt8
+def drawValue : Draw → UInt8 × List UInt8
   | .clear value => (0, color.write value)
   | .rect p width height radius value => (1, rectFields.write (p, width, height, radius, value))
   | .circle p radius value => (2, circleFields.write (p, radius, value))
@@ -37,7 +40,7 @@ private def drawValue : Draw → UInt8 × List UInt8
   | .polygon points value => (4, polygonFields.write (points, value))
   | .text p size value paint => (5, textFields.write (p, size, value, paint))
 
-private def parseDraw (value : UInt8 × List UInt8) : Option Draw :=
+def parseDraw (value : UInt8 × List UInt8) : Option Draw :=
   if value.1 = 0 then (decode color value.2).map Draw.clear
   else if value.1 = 1 then
     (decode rectFields value.2).map fun data =>
@@ -62,7 +65,7 @@ def listenerMask : Codec ListenerMask :=
     (by intro value; cases value; rfl)
     (by intro raw value accepted; cases accepted; rfl)
 
-private def propertyValue : Property → UInt8 × List UInt8
+def propertyValue : Property → UInt8 × List UInt8
   | .text value => (0, text.write value)
   | .hint value => (1, text.write value)
   | .foreground value => (2, color.write value)
@@ -78,7 +81,7 @@ private def propertyValue : Property → UInt8 × List UInt8
   | .drawing value => (12, (list draw).write value)
   | .listeners value => (13, listenerMask.write value)
 
-private def parseProperty (value : UInt8 × List UInt8) : Option Property :=
+def parseProperty (value : UInt8 × List UInt8) : Option Property :=
   if value.1 = 0 then (decode text value.2).map Property.text
   else if value.1 = 1 then (decode text value.2).map Property.hint
   else if value.1 = 2 then (decode color value.2).map Property.foreground
@@ -98,7 +101,7 @@ private def parseProperty (value : UInt8 × List UInt8) : Option Property :=
 def property : Codec Property := checked envelope propertyValue parseProperty
   (by intro value; cases value <;> simp [propertyValue, parseProperty, decode_write])
 
-private def patchValue : Patch → UInt8 × List UInt8
+def patchValue : Patch → UInt8 × List UInt8
   | .create id kind => (0, (pair natural nodeKind).write (id, kind))
   | .property id value => (1, (pair natural property).write (id, value))
   | .insert parent index child =>
@@ -106,7 +109,7 @@ private def patchValue : Patch → UInt8 × List UInt8
   | .remove id => (3, natural.write id)
   | .root id => (4, (optional natural).write id)
 
-private def parsePatch (value : UInt8 × List UInt8) : Option Patch :=
+def parsePatch (value : UInt8 × List UInt8) : Option Patch :=
   if value.1 = 0 then
     (decode (pair natural nodeKind) value.2).map fun data => .create data.1 data.2
   else if value.1 = 1 then

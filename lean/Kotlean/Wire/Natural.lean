@@ -1,14 +1,17 @@
-import Kotlean.Wire.Codec
+module
+public import Kotlean.Wire.Codec
+
+@[expose] public section
 
 namespace Kotlean.Wire
 
-private def writeNaturalReference (value : Nat) : List UInt8 :=
+def writeNaturalReference (value : Nat) : List UInt8 :=
   if value < 128 then [UInt8.ofNat value]
   else UInt8.ofNat (value % 128 + 128) :: writeNaturalReference (value / 128)
 termination_by value
 decreasing_by exact Nat.div_lt_self (by omega) (by decide)
 
-private def writeNaturalAcc (value : Nat) (accumulator : List UInt8) : List UInt8 :=
+def writeNaturalAcc (value : Nat) (accumulator : List UInt8) : List UInt8 :=
   if value < 128 then (UInt8.ofNat value :: accumulator).reverse
   else writeNaturalAcc (value / 128) (UInt8.ofNat (value % 128 + 128) :: accumulator)
 termination_by value
@@ -37,7 +40,7 @@ theorem writeNatural_unfold (value : Nat) :
   simp only [writeNatural_eq_reference]
   rw [writeNaturalReference]
 
-private def readNaturalRawReference : List UInt8 → Option (Nat × List UInt8)
+def readNaturalRawReference : List UInt8 → Option (Nat × List UInt8)
   | [] => none
   | head :: tail =>
     if head.toNat < 128 then some (head.toNat, tail)
@@ -45,7 +48,7 @@ private def readNaturalRawReference : List UInt8 → Option (Nat × List UInt8)
       let (high, rest) ← readNaturalRawReference tail
       pure (head.toNat - 128 + 128 * high, rest)
 
-private def readNaturalAcc (accumulator multiplier : Nat) :
+def readNaturalAcc (accumulator multiplier : Nat) :
     List UInt8 → Option (Nat × List UInt8)
   | [] => none
   | head :: tail =>
@@ -67,7 +70,7 @@ private theorem readNaturalAcc_agrees (input : List UInt8) (accumulator multipli
         rcases result with ⟨value, rest⟩
         simp [Nat.mul_add, Nat.mul_assoc, Nat.add_assoc]
 
-private def readNaturalRaw (input : List UInt8) : Option (Nat × List UInt8) :=
+def readNaturalRaw (input : List UInt8) : Option (Nat × List UInt8) :=
   readNaturalAcc 0 1 input
 
 private theorem readNaturalRaw_eq_reference (input : List UInt8) :
@@ -85,7 +88,7 @@ private theorem readNaturalRaw_unfold (input : List UInt8) :
   simp only [readNaturalRaw_eq_reference]
   cases input <;> rfl
 
-private def readNatural (input : List UInt8) : Option (Nat × List UInt8) := do
+def readNatural (input : List UInt8) : Option (Nat × List UInt8) := do
   let (value, rest) ← readNaturalRaw input
   if equal input (writeNatural value ++ rest) then some (value, rest) else none
 

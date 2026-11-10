@@ -1,4 +1,7 @@
-import Kotlean.Ui.Facts
+module
+public import Kotlean.Ui.Facts
+
+@[expose] public section
 
 namespace Kotlean.Ui.Numbering
 

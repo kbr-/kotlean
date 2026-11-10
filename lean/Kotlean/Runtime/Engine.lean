@@ -1,5 +1,8 @@
-import Kotlean.Runtime.Commands
-import Kotlean.Runtime.Observation
+module
+public import Kotlean.Runtime.Commands
+public import Kotlean.Runtime.Observation
+
+@[expose] public section
 
 namespace Kotlean.Runtime
 

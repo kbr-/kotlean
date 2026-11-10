@@ -1,3 +1,6 @@
+module
+@[expose] public section
+
 namespace Kotlean
 
 def equal [BEq α] (left right : α) : Bool := left == right

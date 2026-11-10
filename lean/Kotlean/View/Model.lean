@@ -1,5 +1,8 @@
-import Kotlean.Protocol
-import Std.Data.ExtTreeMap.Lemmas
+module
+public import Kotlean.Protocol
+public import Std.Data.ExtTreeMap.Lemmas
+
+@[expose] public section
 
 namespace Kotlean.View
 

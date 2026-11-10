@@ -1,8 +1,11 @@
-import Kotlean.Wire.Natural
+module
+public import Kotlean.Wire.Natural
+
+@[expose] public section
 
 namespace Kotlean.Wire
 
-private def readMany (element : Codec α) : Nat → List UInt8 →
+def readMany (element : Codec α) : Nat → List UInt8 →
     Option (List α × List UInt8)
   | 0, input => some ([], input)
   | count + 1, input => do
@@ -10,7 +13,7 @@ private def readMany (element : Codec α) : Nat → List UInt8 →
     let (values, rest) ← readMany element count tail
     pure (value :: values, rest)
 
-private def readManyAcc (element : Codec α) : Nat → List UInt8 → List α →
+def readManyAcc (element : Codec α) : Nat → List UInt8 → List α →
     Option (List α × List UInt8)
   | 0, input, accumulator => some (accumulator.reverse, input)
   | count + 1, input, accumulator => do
@@ -79,7 +82,7 @@ private theorem writeMany_length (element : Codec α) (values : List α) :
     simp only [List.flatMap_cons, List.length_append, List.length_cons]
     omega
 
-private def readList (element : Codec α) (input : List UInt8) :
+def readList (element : Codec α) (input : List UInt8) :
     Option (List α × List UInt8) := do
   let (count, tail) ← natural.read input
   if count ≤ tail.length then readManyAcc element count tail [] else none

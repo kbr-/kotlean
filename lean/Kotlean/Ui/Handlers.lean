@@ -1,4 +1,7 @@
-import Kotlean.Ui.Laws
+module
+public import Kotlean.Ui.Laws
+
+@[expose] public section
 
 namespace Kotlean.Handlers
 

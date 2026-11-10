@@ -1,4 +1,7 @@
-import Kotlean.View.SceneProofs
+module
+public import Kotlean.View.SceneProofs
+
+@[expose] public section
 
 namespace Kotlean.View.Canonical
 

@@ -1,4 +1,7 @@
-import Kotlean.Runtime.Subscriptions
+module
+public import Kotlean.Runtime.Subscriptions
+
+@[expose] public section
 
 namespace Kotlean.Runtime.Subscriptions
 

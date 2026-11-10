@@ -1,5 +1,8 @@
-import Kotlean.Ui.Types
-import Std.Data.ExtTreeMap
+module
+public import Kotlean.Ui.Types
+public import Std.Data.ExtTreeMap
+
+@[expose] public section
 
 namespace Kotlean
 

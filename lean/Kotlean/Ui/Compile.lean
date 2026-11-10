@@ -1,4 +1,7 @@
-import Kotlean.Ui.Handlers
+module
+public import Kotlean.Ui.Handlers
+
+@[expose] public section
 
 namespace Kotlean.Ui
 

@@ -1,8 +1,11 @@
-import Kotlean.Wire.Basic
+module
+public import Kotlean.Wire.Basic
+
+@[expose] public section
 
 namespace Kotlean.Wire
 
-private def readOption (element : Codec α) : List UInt8 → Option (Option α × List UInt8)
+def readOption (element : Codec α) : List UInt8 → Option (Option α × List UInt8)
   | [] => none
   | tag :: tail =>
     if tag = 0 then some (none, tail)

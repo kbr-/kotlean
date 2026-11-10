@@ -1,5 +1,8 @@
-import Kotlean.View.Model
-import Kotlean.View.Properties
+module
+public import Kotlean.View.Model
+public import Kotlean.View.Properties
+
+@[expose] public section
 
 namespace Kotlean.View
 

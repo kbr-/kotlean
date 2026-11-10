@@ -1,5 +1,8 @@
-import Kotlean.Runtime.State
-import Kotlean.Runtime.Contracts
+module
+public import Kotlean.Runtime.State
+public import Kotlean.Runtime.Contracts
+
+@[expose] public section
 
 namespace Kotlean.Runtime.Laws
 open Kotlean

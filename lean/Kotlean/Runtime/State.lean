@@ -1,6 +1,9 @@
-import Kotlean.Runtime.Requests
-import Kotlean.Runtime.SubscriptionProofs
-import Kotlean.Ui.Canonical
+module
+public import Kotlean.Runtime.Requests
+public import Kotlean.Runtime.SubscriptionProofs
+public import Kotlean.Ui.Canonical
+
+@[expose] public section
 
 namespace Kotlean.Runtime
 

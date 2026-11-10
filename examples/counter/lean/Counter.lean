@@ -1,1 +1,2 @@
-import Counter.View
+module
+public import Counter.View

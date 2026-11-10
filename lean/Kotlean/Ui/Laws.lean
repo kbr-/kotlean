@@ -1,4 +1,7 @@
-import Kotlean.Ui.Types
+module
+public import Kotlean.Ui.Types
+
+@[expose] public section
 
 namespace Kotlean.Ui.Laws
 

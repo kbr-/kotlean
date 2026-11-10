@@ -1,30 +1,32 @@
-import Kotlean.Wire.Basic
-import Kotlean.Wire.Option
-import Kotlean.Wire.List
-import Kotlean.Wire.Frame
-import Kotlean.Wire.Scalar
-import Kotlean.Protocol
-import Kotlean.Wire.Input
-import Kotlean.Wire.Output
-import Kotlean.View.Properties
-import Kotlean.View.Scene
-import Kotlean.View.SceneProofs
-import Kotlean.View.Diff
-import Kotlean.View.Correctness
-import Kotlean.Ui.Handlers
-import Kotlean.Ui.Compile
-import Kotlean.Ui.Facts
-import Kotlean.Ui.Registry
-import Kotlean.Ui.Numbering
-import Kotlean.Ui.Canonical
-import Kotlean.App
-import Kotlean.Runtime.Requests
-import Kotlean.Runtime.Subscriptions
-import Kotlean.Runtime.SubscriptionProofs
-import Kotlean.Runtime.State
-import Kotlean.Runtime.Commands
-import Kotlean.Runtime.Observation
-import Kotlean.Runtime.Engine
-import Kotlean.Runtime.ObservationProofs
-import Kotlean.Runtime.Laws
-import Kotlean.Runtime.Verified
+module
+public import Kotlean.Wire.Basic
+public import Kotlean.Wire.Option
+public import Kotlean.Wire.List
+public import Kotlean.Wire.Frame
+public import Kotlean.Wire.Scalar
+public import Kotlean.Protocol
+public import Kotlean.Wire.Input
+public import Kotlean.Wire.Output
+public import Kotlean.View.Properties
+public import Kotlean.View.Scene
+public import Kotlean.View.SceneProofs
+public import Kotlean.View.Diff
+public import Kotlean.View.Correctness
+public import Kotlean.Ui.Handlers
+public import Kotlean.Ui.Compile
+public import Kotlean.Ui.Facts
+public import Kotlean.Ui.Registry
+public import Kotlean.Ui.Numbering
+public import Kotlean.Ui.Canonical
+public import Kotlean.App
+public import Kotlean.Runtime.Requests
+public import Kotlean.Runtime.Subscriptions
+public import Kotlean.Runtime.SubscriptionProofs
+public import Kotlean.Runtime.State
+public import Kotlean.Runtime.Commands
+public import Kotlean.Runtime.Observation
+public import Kotlean.Runtime.Engine
+public import Kotlean.Runtime.ObservationProofs
+public import Kotlean.Runtime.Laws
+public import Kotlean.Runtime.Verified
+public import Kotlean.Native

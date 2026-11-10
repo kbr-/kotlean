@@ -1,4 +1,7 @@
-import Kotlean.Equality
+module
+public import Kotlean.Equality
+
+@[expose] public section
 
 namespace Kotlean.Wire
 

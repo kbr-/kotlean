@@ -1,6 +1,9 @@
-import Kotlean.Runtime.Laws
-import Kotlean.Runtime.Engine
-import Kotlean.Runtime.ObservationProofs
+module
+public import Kotlean.Runtime.Laws
+public import Kotlean.Runtime.Engine
+public import Kotlean.Runtime.ObservationProofs
+
+@[expose] public section
 
 namespace Kotlean.Runtime.Verified
 

@@ -1,4 +1,7 @@
-import Kotlean.View.Scene
+module
+public import Kotlean.View.Scene
+
+@[expose] public section
 
 namespace Kotlean.View
 

@@ -1,4 +1,7 @@
-import Kotlean.View.Diff
+module
+public import Kotlean.View.Diff
+
+@[expose] public section
 
 namespace Kotlean.View
 

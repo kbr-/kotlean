@@ -1,17 +1,20 @@
-import Kotlean.Protocol
-import Kotlean.Wire.Checked
-import Kotlean.Wire.Scalar
-import Kotlean.Wire.Frame
+module
+public import Kotlean.Protocol
+public import Kotlean.Wire.Checked
+public import Kotlean.Wire.Scalar
+public import Kotlean.Wire.Frame
+
+@[expose] public section
 
 namespace Kotlean.Wire
 
 def envelope : Codec (UInt8 × List UInt8) := pair byte (list byte)
 
-private def kindValue : NodeKind → UInt8 × List UInt8
+def kindValue : NodeKind → UInt8 × List UInt8
   | .column => (0, []) | .row => (1, []) | .text => (2, []) | .button => (3, [])
   | .input => (4, []) | .scroll => (5, []) | .canvas => (6, [])
 
-private def parseKind (value : UInt8 × List UInt8) : Option NodeKind :=
+def parseKind (value : UInt8 × List UInt8) : Option NodeKind :=
   if value.1 = 0 then some .column else if value.1 = 1 then some .row
   else if value.1 = 2 then some .text else if value.1 = 3 then some .button
   else if value.1 = 4 then some .input else if value.1 = 5 then some .scroll
@@ -20,10 +23,10 @@ private def parseKind (value : UInt8 × List UInt8) : Option NodeKind :=
 def nodeKind : Codec NodeKind := checked envelope kindValue parseKind
   (by intro value; cases value <;> decide)
 
-private def phaseValue : TouchPhase → UInt8 × List UInt8
+def phaseValue : TouchPhase → UInt8 × List UInt8
   | .down => (0, []) | .move => (1, []) | .up => (2, []) | .cancel => (3, [])
 
-private def parsePhase (value : UInt8 × List UInt8) : Option TouchPhase :=
+def parsePhase (value : UInt8 × List UInt8) : Option TouchPhase :=
   if value.1 = 0 then some .down else if value.1 = 1 then some .move
   else if value.1 = 2 then some .up else if value.1 = 3 then some .cancel else none
 
@@ -47,7 +50,7 @@ def touchFrame : Codec TouchFrame :=
     (by intro value; cases value; rfl)
     (by intro raw value accepted; cases accepted; rfl)
 
-private def inputValue : Input → UInt8 × List UInt8
+def inputValue : Input → UInt8 × List UInt8
   | .click => (0, [])
   | .text value => (1, text.write value)
   | .touch value => (2, touchFrame.write value)
@@ -55,7 +58,7 @@ private def inputValue : Input → UInt8 × List UInt8
   | .resize width height density =>
     (4, (pair natural (pair natural natural)).write (width, height, density))
 
-private def parseInput (value : UInt8 × List UInt8) : Option Input :=
+def parseInput (value : UInt8 × List UInt8) : Option Input :=
   if value.1 = 0 then some .click
   else if value.1 = 1 then (decode text value.2).map Input.text
   else if value.1 = 2 then (decode touchFrame value.2).map Input.touch

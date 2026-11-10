@@ -1,4 +1,7 @@
-import Kotlean.Wire.Codec
+module
+public import Kotlean.Wire.Codec
+
+@[expose] public section
 
 namespace Kotlean.Wire
 
@@ -18,7 +21,7 @@ def byte : Codec UInt8 where
       rfl
   positive := by intro value; exact Nat.zero_lt_succ 0
 
-private def readBool : List UInt8 → Option (Bool × List UInt8)
+def readBool : List UInt8 → Option (Bool × List UInt8)
   | [] => none
   | value :: tail =>
     if value = 0 then some (false, tail)
@@ -42,7 +45,7 @@ def boolean : Codec Bool where
         · cases h
   positive := by intro value; exact Nat.zero_lt_succ 0
 
-private def readPair (left : Codec α) (right : Codec β)
+def readPair (left : Codec α) (right : Codec β)
     (input : List UInt8) : Option ((α × β) × List UInt8) := do
   let (a, tail) ← left.read input
   let (b, rest) ← right.read tail

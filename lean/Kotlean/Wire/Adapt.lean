@@ -1,8 +1,11 @@
-import Kotlean.Wire.Codec
+module
+public import Kotlean.Wire.Codec
+
+@[expose] public section
 
 namespace Kotlean.Wire
 
-private def readAdapt (base : Codec α) (project : α → Option β)
+def readAdapt (base : Codec α) (project : α → Option β)
     (input : List UInt8) : Option (β × List UInt8) := do
   let (raw, tail) ← base.read input
   let value ← project raw

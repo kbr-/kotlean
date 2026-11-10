@@ -1,13 +1,16 @@
-import Kotlean.Wire.Effects
-import Kotlean.Wire.Drawing
+module
+public import Kotlean.Wire.Effects
+public import Kotlean.Wire.Drawing
+
+@[expose] public section
 
 namespace Kotlean.Wire
 
-private def changeValue : SubscriptionChange → UInt8 × List UInt8
+def changeValue : SubscriptionChange → UInt8 × List UInt8
   | .add value => (0, subscription.write value)
   | .remove id generation => (1, (pair natural natural).write (id, generation))
 
-private def parseChange (value : UInt8 × List UInt8) : Option SubscriptionChange :=
+def parseChange (value : UInt8 × List UInt8) : Option SubscriptionChange :=
   if value.1 = 0 then (decode subscription value.2).map SubscriptionChange.add
   else if value.1 = 1 then
     (decode (pair natural natural) value.2).map fun data => .remove data.1 data.2
@@ -24,12 +27,12 @@ def output : Codec Output :=
     (by intro value; cases value; rfl)
     (by intro raw value accepted; cases accepted; rfl)
 
-private def outValue : Out → UInt8 × List UInt8
+def outValue : Out → UInt8 × List UInt8
   | .changes value => (0, output.write value)
   | .ignored value => (1, (optional text).write value)
   | .failed value => (2, text.write value)
 
-private def parseOut (value : UInt8 × List UInt8) : Option Out :=
+def parseOut (value : UInt8 × List UInt8) : Option Out :=
   if value.1 = 0 then (decode output value.2).map Out.changes
   else if value.1 = 1 then (decode (optional text) value.2).map Out.ignored
   else if value.1 = 2 then (decode text value.2).map Out.failed else none

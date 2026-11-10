@@ -1,4 +1,7 @@
-import Kotlean.View.Canonical
+module
+public import Kotlean.View.Canonical
+
+@[expose] public section
 
 namespace Kotlean
 

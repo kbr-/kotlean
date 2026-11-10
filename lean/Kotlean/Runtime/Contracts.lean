@@ -1,4 +1,7 @@
-import Kotlean.Protocol
+module
+public import Kotlean.Protocol
+
+@[expose] public section
 
 namespace Kotlean.Runtime.Contracts
 

@@ -1,5 +1,8 @@
-import Kotlean.View.Canonical
-import Kotlean.View.Attachments
+module
+public import Kotlean.View.Canonical
+public import Kotlean.View.Attachments
+
+@[expose] public section
 
 namespace Kotlean.View.DiffProofs
 

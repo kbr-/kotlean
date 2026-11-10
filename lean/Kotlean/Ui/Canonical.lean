@@ -1,6 +1,9 @@
-import Kotlean.Ui.Numbering
-import Kotlean.Ui.Registry
-import Kotlean.View.Correctness
+module
+public import Kotlean.Ui.Numbering
+public import Kotlean.Ui.Registry
+public import Kotlean.View.Correctness
+
+@[expose] public section
 
 namespace Kotlean.Ui
 
