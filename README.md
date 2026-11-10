@@ -30,7 +30,7 @@ duplicate updates and reordered fields.
 The primitive scene interpreter has proofs for record creation, property changes, child moves,
 removal and root selection. The scene diff generator has proofs that unchanged scenes emit nothing
 and ids with unchanged kinds are never removed or recreated. Unchanged structure permits property
-setters only; full application correctness remains unproved.
+setters only. For valid old and new scenes, applying the diff is proved to return the new scene.
 
 Scene diff endpoints use dense zero-based preorder ids: walking the root and its ordered children
 visits 0 through the node count minus one. A nonempty scene has root 0, each nonroot has one parent,

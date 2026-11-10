@@ -33,8 +33,7 @@ def childPatches (entries : List (Nat × Node)) : List Patch :=
     node.children.mapIdx (fun index child => .insert parent index child)
 
 -- Endpoints are rooted trees with dense zero-based preorder ids, legal kind capacities and
--- exactly one parent per nonroot. Nonempty roots are 0; empty scenes have no root. Full
--- application correctness remains unproved.
+-- exactly one parent per nonroot. Nonempty roots are 0; empty scenes have no root.
 def diffScene (old new : Scene) : List Patch :=
   if equal (sceneObservation old) (sceneObservation new) then []
   else
