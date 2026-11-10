@@ -11,3 +11,9 @@ import Kotlean.View.Scene
 import Kotlean.View.SceneProofs
 import Kotlean.View.Diff
 import Kotlean.View.Correctness
+import Kotlean.Ui.Handlers
+import Kotlean.Ui.Compile
+import Kotlean.Ui.Facts
+import Kotlean.Ui.Registry
+import Kotlean.Ui.Numbering
+import Kotlean.Ui.Canonical

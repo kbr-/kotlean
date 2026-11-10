@@ -36,6 +36,10 @@ Scene diff endpoints use dense zero-based preorder ids: walking the root and its
 visits 0 through the node count minus one. A nonempty scene has root 0, each nonroot has one parent,
 scroll has at most one child, and leaves have none; an empty scene has no root.
 
+Typed Lean views support column, row, text, button, input, scroll and canvas, with handlers kept
+outside the rendered scene. Compilation is proved to produce canonical preorder scenes and matching
+handler registries; changing only handler closures preserves the rendered scene.
+
 Build the Lean package with the pinned toolchain:
 
 ```sh
