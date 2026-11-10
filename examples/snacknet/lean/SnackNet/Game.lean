@@ -64,6 +64,8 @@ def distance (a b : Cell) : Nat :=
 structure Operator where
   start : Cell
   position : Cell
+  previous : Option Cell := none
+  steps : Nat := 0
   deriving DecidableEq
 
 inductive Phase where
@@ -82,20 +84,39 @@ structure Game where
   deriving DecidableEq
 
 def initial : Game :=
-  ⟨playerStart, [⟨leftStart, leftStart⟩, ⟨rightStart, rightStart⟩], initialTokens,
+  ⟨playerStart, [⟨leftStart, leftStart, none, 0⟩, ⟨rightStart, rightStart, none, 0⟩], initialTokens,
     3, 0, true, 0, .running⟩
 
 def score (game : Game) : Nat := 10 * (initialTokens.length - game.tokens.length)
 
-def moveOperator (player : Cell) (powered : Bool) (operator : Operator) : Operator :=
-  let options := directions.filterMap (neighbor operator.position)
+def moveOperator (target : Cell) (powered : Bool) (operator : Operator) : Operator :=
+  let exits := directions.filterMap (neighbor operator.position)
+  let forward := exits.filter fun cell => some cell != operator.previous
+  let options := if forward.isEmpty then exits else forward
+  let target := if !powered && operator.steps % 10 >= 8 then operator.start else target
   let better (candidate best : Cell) : Bool :=
-    if powered then distance best player < distance candidate player
-    else distance candidate player < distance best player
+    if powered then distance best target < distance candidate target
+    else distance candidate target < distance best target
   let position := match options with
     | [] => operator.position
     | first :: rest => rest.foldl (fun best candidate => if better candidate best then candidate else best) first
-  { operator with position }
+  { operator with position, previous := some operator.position, steps := operator.steps + 1 }
+
+def project (heading : Option Direction) (position : Cell) : Nat → Cell
+  | 0 => position
+  | remaining + 1 =>
+    match heading.bind (neighbor position) with
+    | some next => project heading next remaining
+    | none => position
+
+def planOperators (game : Game) (heading : Option Direction) : List Operator :=
+  game.operators.map fun operator =>
+    let target := if operator.start = rightStart && game.power = 0 then
+      project heading game.player 2 else game.player
+    moveOperator target (game.power > 0) operator
+
+def Operator.reset (operator : Operator) : Operator :=
+  { operator with position := operator.start, previous := none, steps := 0 }
 
 def contact (game : Game) : Bool :=
   game.operators.any fun operator => decide (operator.position = game.player)
@@ -104,24 +125,28 @@ def settle (game : Game) : Game :=
   if contact game then
     if game.power > 0 then
       { game with operators := game.operators.map fun operator =>
-          if operator.position = game.player then { operator with position := operator.start }
+          if operator.position = game.player then operator.reset
           else operator }
     else
       let lives : Fin 4 := ⟨game.lives.val - 1, Nat.lt_of_le_of_lt (Nat.sub_le ..) game.lives.isLt⟩
       { game with
         player := playerStart
         lives := lives
-        operators := game.operators.map fun operator => { operator with position := operator.start }
+        operators := game.operators.map Operator.reset
         phase := if lives.val = 0 then .lost else .running }
   else game
 
-def moveActors (game : Game) : Game :=
+def moveActors (game : Game) (planned : Option (List Operator) := none) : Game :=
   if contact game then settle game
   else if game.beat = 2 then
-    settle { game with operators := game.operators.map (moveOperator game.player (game.power > 0)) }
+    let operators := match planned with
+      | some operators => operators
+      | none => planOperators game none
+    settle { game with operators }
   else game
 
-def tick (direction : Option Direction) (game : Game) : Game :=
+def tick (direction : Option Direction) (game : Game)
+    (planned : Option (List Operator) := none) : Game :=
   if game.phase = .running then
     let player := (direction.bind (neighbor game.player)).getD game.player
     let pickup := game.pickupAvailable && decide (player = powerCell)
@@ -129,7 +154,7 @@ def tick (direction : Option Direction) (game : Game) : Game :=
       player := player
       tokens := game.tokens.filter fun token => decide (token ≠ player)
       power := if pickup then 24 else game.power
-      pickupAvailable := game.pickupAvailable && !pickup }
+      pickupAvailable := game.pickupAvailable && !pickup } planned
     { moved with
       power := moved.power - 1
       beat := (moved.beat + 1) % 3
@@ -206,7 +231,8 @@ theorem settle_tokens (game : Game) : (settle game).tokens = game.tokens := by
   split <;> try rfl
   split <;> rfl
 
-theorem moveActors_tokens (game : Game) : (moveActors game).tokens = game.tokens := by
+theorem moveActors_tokens (game : Game) (planned : Option (List Operator) := none) :
+    (moveActors game planned).tokens = game.tokens := by
   unfold moveActors
   split
   · exact settle_tokens game
@@ -214,8 +240,9 @@ theorem moveActors_tokens (game : Game) : (moveActors game).tokens = game.tokens
     · rw [settle_tokens]
     · rfl
 
-theorem moveActors_powered_lives (game : Game) (h : 0 < game.power) :
-    (moveActors game).lives = game.lives := by
+theorem moveActors_powered_lives (game : Game) (h : 0 < game.power)
+    (planned : Option (List Operator) := none) :
+    (moveActors game planned).lives = game.lives := by
   unfold moveActors
   split
   · exact powered_contact_lives game h
@@ -223,16 +250,18 @@ theorem moveActors_powered_lives (game : Game) (h : 0 < game.power) :
     · exact powered_contact_lives _ h
     · rfl
 
-theorem tick_powered_lives (direction : Option Direction) (game : Game) (h : 0 < game.power) :
-    (tick direction game).lives = game.lives := by
+theorem tick_powered_lives (direction : Option Direction) (game : Game) (h : 0 < game.power)
+    (planned : Option (List Operator) := none) :
+    (tick direction game planned).lives = game.lives := by
   unfold tick
   split
   · apply moveActors_powered_lives
     split <;> simp_all
   · rfl
 
-theorem tick_tokens (direction : Option Direction) (game : Game) :
-    (tick direction game).tokens.length ≤ game.tokens.length := by
+theorem tick_tokens (direction : Option Direction) (game : Game)
+    (planned : Option (List Operator) := none) :
+    (tick direction game planned).tokens.length ≤ game.tokens.length := by
   unfold tick
   split
   · simp only [moveActors_tokens]

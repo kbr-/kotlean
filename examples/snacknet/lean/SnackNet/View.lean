@@ -19,6 +19,7 @@ structure Model where
   game : Game := initial
   heading : Option Direction := none
   travel : Option Direction := none
+  operatorsInTransit : Option (List Operator) := none
   progress : Nat := 0
   lastFrame : Option Nat := none
   display : Display := {}
@@ -44,15 +45,24 @@ def advanceFrame (now : Nat) (model : Model) : Model :=
     let elapsed := min cellTime (now - model.lastFrame.getD now)
     let model := { model with lastFrame := some now }
     let travel := if model.progress = 0 then nextDirection model else model.travel
+    let plan := match model.operatorsInTransit with
+      | some _ => model.operatorsInTransit
+      | none => some (planOperators model.game travel)
     let progress := model.progress + elapsed
-    if progress < cellTime then { model with travel, progress }
+    if progress < cellTime then { model with travel, progress, operatorsInTransit := plan }
     else
-      let game := tick travel model.game
-      let arrived := { model with game, travel }
+      let game := tick travel model.game plan
+      let reset := game.lives != model.game.lives ||
+        (model.game.beat != 2 && game.operators != model.game.operators)
+      let game := if reset then { game with beat := 0 } else game
+      let plan := if reset || model.game.beat == 2 then none else plan
+      let arrived := { model with game, travel, operatorsInTransit := plan }
       if game.lives != model.game.lives || game.phase != .running then
-        { arrived with progress := 0, travel := none }
+        { arrived with progress := 0, travel := none, operatorsInTransit := none }
       else
-        { arrived with progress := progress - cellTime, travel := nextDirection arrived }
+        let travel := nextDirection arrived
+        let plan := if plan.isNone then some (planOperators game travel) else plan
+        { arrived with progress := progress - cellTime, travel, operatorsInTransit := plan }
 
 def frameTime (bytes : List UInt8) : Option Msg :=
   if bytes.length = 8 then
@@ -132,10 +142,11 @@ def BoardView.atCell (board : BoardView) (cell : Cell) (x y : Nat) : Point :=
   ⟨origin.x + Int.ofNat (board.side * x / 10), origin.y + Int.ofNat (board.side * y / 10)⟩
 
 def BoardView.between (board : BoardView) (start finish : Cell) (progress : Nat)
+    (duration : Nat)
     (x y : Nat) : Point :=
   let origin := board.atCell start x y
   let target := board.atCell finish x y
-  let shift := fun a b => a + (b - a) * Int.ofNat progress / Int.ofNat cellTime
+  let shift := fun a b => a + (b - a) * Int.ofNat progress / Int.ofNat duration
   ⟨shift origin.x target.x, shift origin.y target.y⟩
 
 def boardTiles (board : BoardView) : List Draw :=
@@ -174,14 +185,13 @@ def drawing (model : Model) : List Draw :=
       board.atCell powerCell 5 9, board.atCell powerCell 1 5] 0xffffc971]
     else []
   let playerTarget := (model.travel.bind (neighbor game.player)).getD game.player
-  let operators := if game.beat = 2 && model.progress > 0 then
-    (tick model.travel { game with phase := .running }).operators else game.operators
+  let operators := model.operatorsInTransit.getD game.operators
   let humans := (game.operators.zip operators).flatMap fun (operator, next) =>
-    let target := if distance operator.position next.position = 1 then next.position
-      else operator.position
-    human board (board.between operator.position target model.progress) (game.power > 0)
+    let elapsed := game.beat * cellTime + model.progress
+    human board (board.between operator.position next.position elapsed (3 * cellTime))
+      (game.power > 0)
   [.clear 0xff101522] ++ boardTiles board ++ [gate] ++ tokens ++ pickup ++ humans ++
-    robot board (board.between game.player playerTarget model.progress) game
+    robot board (board.between game.player playerTarget model.progress cellTime) game
 
 def button (label : String) (message : Msg) : Ui Msg :=
   .button {
