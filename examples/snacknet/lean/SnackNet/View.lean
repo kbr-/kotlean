@@ -15,6 +15,11 @@ structure Swipe where
   id : Nat
   origin : Point
 
+structure Pad where
+  display : Display := {}
+  pointer : Option Nat := none
+  pressed : Option Direction := none
+
 structure Model where
   game : Game := initial
   heading : Option Direction := none
@@ -24,12 +29,14 @@ structure Model where
   lastFrame : Option Nat := none
   display : Display := {}
   swipe : Option Swipe := none
+  pad : Pad := {}
 
 inductive Msg where
-  | steer (direction : Direction)
   | key (code : Nat) (pressed : Bool)
   | touch (frame : TouchFrame)
+  | padTouch (frame : TouchFrame)
   | resize (width height density : Nat)
+  | padResize (width height density : Nat)
   | frame (now : Nat)
   | pause | back | restart | background
 
@@ -101,18 +108,50 @@ def touchUpdate (frame : TouchFrame) (model : Model) : Model :=
   | .cancel => { model with swipe := none }
   | .move => model
 
+def directionAt (display : Display) (point : Point) : Option Direction :=
+  let side := min display.width display.height * 1000
+  let dx := point.x - Int.ofNat (display.width * 500)
+  let dy := point.y - Int.ofNat (display.height * 500)
+  if side = 0 || max dx.natAbs dy.natAbs < side * 14 / 100 then none
+  else if dx.natAbs ≥ dy.natAbs then some (if dx < 0 then .left else .right)
+  else some (if dy < 0 then .up else .down)
+
+def Pad.release (pad : Pad) : Pad := { pad with pointer := none, pressed := none }
+
+def Pad.track (pad : Pad) (contact : Contact) : Pad :=
+  { pad with pointer := some contact.id, pressed := directionAt pad.display contact.point }
+
+def padTouchUpdate (frame : TouchFrame) (model : Model) : Model :=
+  let pad := model.pad
+  let tracked := match frame.phase with
+    | .down =>
+      if pad.pointer.isSome then pad
+      else (frame.contacts[frame.changed]?.map (pad.track ·)).getD pad
+    | .move =>
+      (frame.contacts.find? (fun contact => some contact.id == pad.pointer)).map (pad.track ·)
+        |>.getD pad
+    | .up =>
+      if (frame.contacts[frame.changed]?.map Contact.id) == pad.pointer then pad.release else pad
+    | .cancel => pad.release
+  { model with pad := tracked, heading := tracked.pressed.or model.heading }
+
 def update (message : Msg) (model : Model) : Model × List (Cmd Msg) :=
   let next : Model := match message with
-    | .steer direction => { model with heading := some direction }
     | .key code pressed =>
       if pressed then { model with heading := (keyDirection code).or model.heading } else model
     | .touch frame => touchUpdate frame model
+    | .padTouch frame => padTouchUpdate frame model
     | .resize w h _ => { model with display := ⟨w, h⟩ }
+    | .padResize w h _ => { model with pad := { model.pad with display := ⟨w, h⟩ } }
     | .frame now => advanceFrame now model
     | .pause | .back =>
-      { model with game := togglePause model.game, swipe := none, lastFrame := none }
-    | .restart => { display := model.display }
-    | .background => { model with swipe := none, lastFrame := none }
+      { model with
+        game := togglePause model.game
+        swipe := none
+        lastFrame := none
+        pad := model.pad.release }
+    | .restart => { display := model.display, pad := model.pad.release }
+    | .background => { model with swipe := none, lastFrame := none, pad := model.pad.release }
   (next, [])
 
 def subscriptions (model : Model) : List (Kotlean.Sub Msg) :=
@@ -201,20 +240,40 @@ def button (label : String) (message : Msg) : Ui Msg :=
     text := label, width := .wrap, height := .dp 48, padding := 14
     background := 0xff304063, events := { click := some message } }
 
-def directionButton (symbol description : String) (direction : Direction) : Ui Msg :=
-  .button {
-    text := symbol, description, width := .dp 58, height := .dp 48, textSize := 26
-    padding := 0, background := 0xff304063, events := { click := some (.steer direction) } }
+def padDrawing (pad : Pad) : List Draw :=
+  let side := min pad.display.width pad.display.height * 1000
+  let size := fun n : Nat => side * n / 100
+  let originX := (pad.display.width * 1000 - side) / 2
+  let originY := (pad.display.height * 1000 - side) / 2
+  let point := fun x y => Point.mk (Int.ofNat (originX + size x)) (Int.ofNat (originY + size y))
+  let plate := fun x y w h r color => Draw.rect (point x y) (size w) (size h) (size r) color
+  let arm := fun (direction : Direction) x y a b c d e f =>
+    let pressed := pad.pressed == some direction
+    let tint : UInt32 := if pressed then 0xff183f4d else 0xff212f4b
+    let ink : UInt32 := if pressed then 0xff66f2d8 else 0xffb9c8e6
+    [ plate x y 24 24 6 tint
+    , Draw.line (point a b) (point c d) (size 2) ink
+    , Draw.line (point c d) (point e f) (size 2) ink ]
+  [ .clear 0xff101522
+  , plate 32 5 36 94 12 0xff080e19
+  , plate 3 34 94 36 12 0xff080e19
+  , plate 32 3 36 94 12 0xff3c4e70
+  , plate 3 32 94 36 12 0xff3c4e70
+  , plate 33 4 34 92 11 0xff19253b
+  , plate 4 33 92 34 11 0xff19253b
+  , .circle (point 50 50) (size 10) 0xff121e31
+  , .circle (point 50 50) (size 3) 0xff4b6384 ] ++
+    arm .up 38 7 44 23 50 16 56 23 ++
+    arm .left 7 38 23 44 16 50 23 56 ++
+    arm .right 69 38 77 44 84 50 77 56 ++
+    arm .down 38 69 44 77 50 84 56 77
 
-def directionPad : Ui Msg :=
-  let row : Attributes Msg := { width := .fill, alignment := .center, padding := 2 }
-  .column { width := .fill }
-    [ .row row [directionButton "↑" "Move up" .up]
-    , .row row
-        [ directionButton "←" "Move left" .left
-        , .column { width := .dp 58, height := .dp 0 } []
-        , directionButton "→" "Move right" .right ]
-    , .row row [directionButton "↓" "Move down" .down] ]
+def directionPad (pad : Pad) : Ui Msg :=
+  .row { width := .fill, alignment := .center }
+    [ .canvas {
+      width := .dp 166, height := .dp 166, drawing := padDrawing pad
+      description := "Directional pad"
+      events := { touch := some .padTouch, resize := some .padResize } } ]
 
 def status (model : Model) : String :=
   let game := model.game
@@ -223,7 +282,7 @@ def status (model : Model) : String :=
   | .lost => "Signal lost"
   | .paused => "Paused"
   | .running =>
-    if model.heading.isNone then "Swipe or tap an arrow"
+    if model.heading.isNone then "Swipe or use the D-pad"
     else if game.power > 0 then s!"OVERCLOCK  {game.power}"
     else if game.tokens.isEmpty then "Exit open"
     else s!"{game.tokens.length} tokens left"
@@ -239,7 +298,7 @@ def view (model : Model) : Ui Msg :=
         description := "SnackNet maze. Swipe or use the direction keys to steer."
         drawing := drawing model
         events := { touch := some .touch, key := some .key, resize := some .resize } }
-    , directionPad
+    , directionPad model.pad
     , .row { width := .fill, alignment := .center, padding := 4 }
         [button (if model.game.phase = .paused then "Resume" else "Pause") .pause,
          button "Restart" .restart] ]
