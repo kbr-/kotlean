@@ -21,11 +21,16 @@ Native Interface (JNI). A control using existing cached artifacts checks complet
 malformed input and byte transport; targeted mutations check that faults are detected. The full
 Gradle test build also passes through the real JNI library.
 
+The natural-number routines and list decoder use accumulator loops proved equivalent to their
+reference definitions. Native controls include 64 KiB text and long malformed frame counts.
+
 The Lean property diff is proved to produce the new record while avoiding unchanged setters,
 duplicate updates and reordered fields.
 
 The primitive scene interpreter has proofs for record creation, property changes, child moves,
-removal and root selection. The complete tree diff is still in development.
+removal and root selection. The scene diff generator has proofs that unchanged scenes emit nothing
+and ids with unchanged kinds are never removed or recreated. Unchanged structure permits property
+setters only; full application correctness remains unproved.
 
 Build the Lean package with the pinned toolchain:
 
