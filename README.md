@@ -45,6 +45,12 @@ reconciliation, suspension of ticks while inactive, save/restore and controlled 
 edits on surviving inputs emit no text setter. See the [runtime
 laws](lean/Kotlean/Runtime/Laws.lean) and [proofs](lean/Kotlean/Runtime/Verified.lean).
 
+The [native byte adapter](lean/Kotlean/Native.lean) proves initialization and event agreement,
+malformed-input behavior and terminal absent state. A compile-time exporter and generic JNI session
+keep app-specific model and message types in Lean. JVM controls run both numeric and text models
+through updates, saving, restoration and closing. Linux ownership controls compare repeated starts,
+updates and frees with deliberately retained states.
+
 Build the Lean package with the pinned toolchain:
 
 ```sh
