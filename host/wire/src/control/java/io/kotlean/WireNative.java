@@ -8,6 +8,7 @@ public final class WireNative {
     private static native boolean matchesInit(long seed, byte[] bytes);
     private static native byte[] output(long seed);
     private static native boolean acceptsOut(byte[] bytes);
+    private static native boolean acceptsEvent(byte[] bytes);
     private static native byte[] echo(byte[] bytes);
     private static native byte[] leakingEcho(byte[] bytes);
     private static native String allocatorStats();
@@ -34,6 +35,8 @@ public final class WireNative {
             return;
         }
         require(matchesEvent(4, new byte[]{4, 0}), "valid save event rejected");
+        require(acceptsEvent(new byte[]{4, 0}), "valid event grammar rejected");
+        require(!acceptsEvent(new byte[]{-1, 0}), "invalid event grammar accepted");
         require(!matchesEvent(0, new byte[]{4, 0}), "wrong semantic event accepted");
         require(matchesInit(0, new byte[]{0}), "valid absent snapshot rejected");
         require(!matchesInit(0, new byte[]{2}), "invalid snapshot tag accepted");

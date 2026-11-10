@@ -14,6 +14,18 @@ fun main() {
     try {
         check(NativeWire.acceptsOut(NativeWire.output(0))) { "native positive control" }
         check(!NativeWire.acceptsOut(byteArrayOf(-1, 0))) { "native negative control" }
+        for (size in listOf(0, 128, 8192, 65536)) {
+            println("Checking native text event: $size ASCII bytes")
+            val value = Event.Node(java.math.BigInteger.ZERO, java.math.BigInteger.ZERO,
+                Input.Text("x".repeat(size)))
+            val bytes = Wire.encodeEvent(value)
+            check(NativeWire.acceptsEvent(bytes)) { "large event size=$size" }
+            check(!NativeWire.acceptsEvent(bytes + byteArrayOf(0))) { "large trailing event size=$size" }
+        }
+        val longCount = byteArrayOf(0) + ByteArray(65536) { 128.toByte() }
+        println("Checking native long frame counts")
+        check(!NativeWire.acceptsEvent(longCount)) { "unterminated frame count" }
+        check(!NativeWire.acceptsEvent(longCount + byteArrayOf(1))) { "oversized frame count" }
         val grammar = listOf(
             intArrayOf(), intArrayOf(255, 0), intArrayOf(1, 2, 0, 0),
             intArrayOf(1, 129, 0, 0), intArrayOf(2, 3, 2, 192, 128),

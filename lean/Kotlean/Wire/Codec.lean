@@ -1,3 +1,5 @@
+import Kotlean.Equality
+
 namespace Kotlean.Wire
 
 structure Codec (α : Type) where

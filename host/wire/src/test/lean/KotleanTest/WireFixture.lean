@@ -92,11 +92,11 @@ def initial (seed : UInt64) : InitInput :=
 
 @[export kotlean_test_matches_event]
 def matchesEvent (seed : UInt64) (bytes : ByteArray) : UInt8 :=
-  if decodeBytes Kotlean.Wire.event bytes = some (event seed) then 1 else 0
+  if equal (decodeBytes Kotlean.Wire.event bytes) (some (event seed)) then 1 else 0
 
 @[export kotlean_test_matches_init]
 def matchesInit (seed : UInt64) (bytes : ByteArray) : UInt8 :=
-  if decodeBytes initInput bytes = some (initial seed) then 1 else 0
+  if equal (decodeBytes initInput bytes) (some (initial seed)) then 1 else 0
 
 @[export kotlean_test_output]
 def outputBytes (seed : UInt64) : ByteArray := encodeBytes out (output seed)
@@ -104,6 +104,10 @@ def outputBytes (seed : UInt64) : ByteArray := encodeBytes out (output seed)
 @[export kotlean_test_accepts_out]
 def acceptsOut (bytes : ByteArray) : UInt8 :=
   if (decodeBytes out bytes).isSome then 1 else 0
+
+@[export kotlean_test_accepts_event]
+def acceptsEvent (bytes : ByteArray) : UInt8 :=
+  if (decodeBytes Kotlean.Wire.event bytes).isSome then 1 else 0
 
 @[export kotlean_test_echo]
 def echo (bytes : ByteArray) : ByteArray := bytes
@@ -118,6 +122,10 @@ theorem init_fixture (seed : UInt64) :
 
 theorem output_fixture (seed : UInt64) : acceptsOut (outputBytes seed) = 1 := by
   simp [acceptsOut, outputBytes, decodeBytes_encodeBytes]
+
+theorem encoded_event_accepted (value : Event) :
+    acceptsEvent (encodeBytes Kotlean.Wire.event value) = 1 := by
+  simp [acceptsEvent, decodeBytes_encodeBytes]
 
 theorem echo_preserves (bytes : ByteArray) : echo bytes = bytes := rfl
 

@@ -1,29 +1,31 @@
+import Kotlean.Equality
+
 namespace Kotlean
 
 inductive NodeKind where
   | column | row | text | button | input | scroll | canvas
-  deriving DecidableEq, Repr
+  deriving DecidableEq, BEq, ReflBEq, LawfulBEq, Repr
 
 inductive TouchPhase where
   | down | move | up | cancel
-  deriving DecidableEq, Repr
+  deriving DecidableEq, BEq, ReflBEq, LawfulBEq, Repr
 
 structure Point where
   x : Int
   y : Int
-  deriving DecidableEq, Repr
+  deriving DecidableEq, BEq, ReflBEq, LawfulBEq, Repr
 
 structure Contact where
   id : Nat
   point : Point
-  deriving DecidableEq, Repr
+  deriving DecidableEq, BEq, ReflBEq, LawfulBEq, Repr
 
 structure TouchFrame where
   phase : TouchPhase
   changed : Nat
   milliseconds : Nat
   contacts : List Contact
-  deriving DecidableEq, Repr
+  deriving DecidableEq, BEq, ReflBEq, LawfulBEq, Repr
 
 inductive Input where
   | click
@@ -31,17 +33,17 @@ inductive Input where
   | touch (frame : TouchFrame)
   | key (code : Nat) (down : Bool)
   | resize (width height density : Nat)
-  deriving DecidableEq, Repr
+  deriving DecidableEq, BEq, ReflBEq, LawfulBEq, Repr
 
 inductive Source where
   | tick (milliseconds : Nat)
   | back | pause | resume
-  deriving DecidableEq, Repr
+  deriving DecidableEq, BEq, ReflBEq, LawfulBEq, Repr
 
 inductive Reply where
   | ok (payload : List UInt8)
   | error (message : String)
-  deriving DecidableEq, Repr
+  deriving DecidableEq, BEq, ReflBEq, LawfulBEq, Repr
 
 inductive Event where
   | node (revision id : Nat) (input : Input)
@@ -49,7 +51,7 @@ inductive Event where
   | subscription (generation id : Nat) (payload : List UInt8)
   | lifecycle (active : Bool)
   | save
-  deriving DecidableEq, Repr
+  deriving DecidableEq, BEq, ReflBEq, LawfulBEq, Repr
 
 inductive Effect where
   | delay (milliseconds : Nat)
@@ -59,28 +61,28 @@ inductive Effect where
   | haptic
   | clipboard (text : String)
   | platform (name : String) (payload : List UInt8)
-  deriving DecidableEq, Repr
+  deriving DecidableEq, BEq, ReflBEq, LawfulBEq, Repr
 
 structure Command where
   id : Nat
   effect : Effect
-  deriving DecidableEq, Repr
+  deriving DecidableEq, BEq, ReflBEq, LawfulBEq, Repr
 
 structure Subscription where
   id : Nat
   generation : Nat
   source : Source
-  deriving DecidableEq, Repr
+  deriving DecidableEq, BEq, ReflBEq, LawfulBEq, Repr
 
 inductive Dimension where
   | wrap
   | fill
   | dp (value : Nat)
-  deriving DecidableEq, Repr
+  deriving DecidableEq, BEq, ReflBEq, LawfulBEq, Repr
 
 inductive Alignment where
   | start | center | finish
-  deriving DecidableEq, Repr
+  deriving DecidableEq, BEq, ReflBEq, LawfulBEq, Repr
 
 inductive Draw where
   | clear (color : UInt32)
@@ -89,7 +91,7 @@ inductive Draw where
   | line (start finish : Point) (width : Nat) (color : UInt32)
   | polygon (points : List Point) (color : UInt32)
   | text (origin : Point) (size : Nat) (value : String) (color : UInt32)
-  deriving DecidableEq, Repr
+  deriving DecidableEq, BEq, ReflBEq, LawfulBEq, Repr
 
 structure ListenerMask where
   click : Bool := false
@@ -97,7 +99,7 @@ structure ListenerMask where
   touch : Bool := false
   key : Bool := false
   resize : Bool := false
-  deriving DecidableEq, Repr
+  deriving DecidableEq, BEq, ReflBEq, LawfulBEq, Repr
 
 structure Properties where
   text : String := ""
@@ -114,7 +116,7 @@ structure Properties where
   alignment : Alignment := .start
   drawing : List Draw := []
   listeners : ListenerMask := {}
-  deriving DecidableEq, Repr
+  deriving DecidableEq, BEq, ReflBEq, LawfulBEq, Repr
 
 inductive Property where
   | text (value : String)
@@ -131,7 +133,7 @@ inductive Property where
   | alignment (value : Alignment)
   | drawing (value : List Draw)
   | listeners (value : ListenerMask)
-  deriving DecidableEq, Repr
+  deriving DecidableEq, BEq, ReflBEq, LawfulBEq, Repr
 
 inductive Patch where
   | create (id : Nat) (kind : NodeKind)
@@ -139,12 +141,12 @@ inductive Patch where
   | insert (parent index child : Nat)
   | remove (id : Nat)
   | root (id : Option Nat)
-  deriving DecidableEq, Repr
+  deriving DecidableEq, BEq, ReflBEq, LawfulBEq, Repr
 
 inductive SubscriptionChange where
   | add (subscription : Subscription)
   | remove (id generation : Nat)
-  deriving DecidableEq, Repr
+  deriving DecidableEq, BEq, ReflBEq, LawfulBEq, Repr
 
 structure Output where
   revision : Nat
@@ -152,16 +154,16 @@ structure Output where
   commands : List Command
   subscriptions : List SubscriptionChange
   snapshot : Option (List UInt8)
-  deriving DecidableEq, Repr
+  deriving DecidableEq, BEq, ReflBEq, LawfulBEq, Repr
 
 inductive Out where
   | changes (value : Output)
   | ignored (diagnostic : Option String)
   | failed (message : String)
-  deriving DecidableEq, Repr
+  deriving DecidableEq, BEq, ReflBEq, LawfulBEq, Repr
 
 structure InitInput where
   snapshot : Option (List UInt8)
-  deriving DecidableEq, Repr
+  deriving DecidableEq, BEq, ReflBEq, LawfulBEq, Repr
 
 end Kotlean

@@ -10,6 +10,7 @@ internal object WireNative {
     external fun matchesInit(seed: Long, bytes: ByteArray): Boolean
     external fun output(seed: Long): ByteArray
     external fun acceptsOut(bytes: ByteArray): Boolean
+    external fun acceptsEvent(bytes: ByteArray): Boolean
     external fun echo(bytes: ByteArray): ByteArray
 }
 
@@ -20,6 +21,7 @@ internal object NativeWire {
     fun matchesInit(seed: Long, bytes: ByteArray): Boolean = call { WireNative.matchesInit(seed, bytes) }
     fun output(seed: Long): ByteArray = call { WireNative.output(seed) }
     fun acceptsOut(bytes: ByteArray): Boolean = call { WireNative.acceptsOut(bytes) }
+    fun acceptsEvent(bytes: ByteArray): Boolean = call { WireNative.acceptsEvent(bytes) }
     fun echo(bytes: ByteArray): ByteArray = call { WireNative.echo(bytes) }
     fun close() { executor.shutdown() }
 }

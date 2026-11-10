@@ -7,7 +7,7 @@ structure Node where
   kind : NodeKind
   properties : Properties := {}
   children : List Nat := []
-  deriving DecidableEq, Repr
+  deriving DecidableEq, BEq, ReflBEq, LawfulBEq, Repr
 
 structure Scene where
   nodes : Std.ExtTreeMap Nat Node := ∅

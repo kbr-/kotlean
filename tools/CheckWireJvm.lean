@@ -56,7 +56,7 @@ structure Mutation where
 
 def mutations : List Mutation := [
   { name := "empty-event", before := "}.finish()\n    fun encodeInit",
-    after := "}.finish().let { ByteArray(0) }\n    fun encodeInit", marker := "event seed=" },
+    after := "}.finish().let { ByteArray(0) }\n    fun encodeInit", marker := "large event size=" },
   { name := "swapped-node-fields", before := "natural(value.revision); natural(value.id); input(value.input)",
     after := "natural(value.id); natural(value.revision); input(value.input)", marker := "event seed=" },
   { name := "truncated-natural", before := "var rest = value",

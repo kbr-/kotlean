@@ -8,6 +8,7 @@ import io.kotest.property.PropTestConfig
 import io.kotest.property.arbitrary.byte
 import io.kotest.property.arbitrary.list
 import io.kotest.property.arbitrary.long
+import io.kotest.property.arbitrary.int
 import io.kotest.property.checkAll
 
 private val config = PropTestConfig(seed = 113L, iterations = 256)
@@ -44,6 +45,28 @@ class WirePropertyTest : StringSpec({
         checkAll(config, Arb.long()) { seed ->
             NativeWire.matchesInit(seed, Wire.encodeInit(Fixture.initial(seed))) shouldBe true
         }
+    }
+
+    "largeTextEventsAreAcceptedWithoutTrailingBytes" {
+        fun checkSize(size: Int) {
+            val value = Event.Node(java.math.BigInteger.ZERO, java.math.BigInteger.ZERO,
+                Input.Text("x".repeat(size)))
+            val bytes = Wire.encodeEvent(value)
+            NativeWire.acceptsEvent(bytes) shouldBe true
+            NativeWire.acceptsEvent(bytes + byteArrayOf(0)) shouldBe false
+        }
+        for (size in listOf(0, 128, 8192, 65536)) checkSize(size)
+        checkAll(PropTestConfig(seed = 113L, iterations = 16), Arb.int(0..65536)) { checkSize(it) }
+    }
+
+    "unterminatedLongFrameCountIsRejected" {
+        NativeWire.acceptsEvent(byteArrayOf(4, 0)) shouldBe true
+        NativeWire.acceptsEvent(byteArrayOf(0) + ByteArray(65536) { 128.toByte() }) shouldBe false
+    }
+
+    "oversizedLongFrameCountIsRejected" {
+        NativeWire.acceptsEvent(byteArrayOf(4, 0)) shouldBe true
+        NativeWire.acceptsEvent(byteArrayOf(0) + ByteArray(65536) { 128.toByte() } + byteArrayOf(1)) shouldBe false
     }
 
     "outputMatchesLeanFixture" {

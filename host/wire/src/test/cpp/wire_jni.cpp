@@ -21,6 +21,7 @@ uint8_t kotlean_test_matches_event(uint64_t, lean_object*);
 uint8_t kotlean_test_matches_init(uint64_t, lean_object*);
 lean_object* kotlean_test_output(uint64_t);
 uint8_t kotlean_test_accepts_out(lean_object*);
+uint8_t kotlean_test_accepts_event(lean_object*);
 lean_object* kotlean_test_echo(lean_object*);
 
 JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM*, void*) {
@@ -56,6 +57,14 @@ JNIEXPORT jboolean JNICALL Java_io_kotlean_WireNative_acceptsOut(
     auto input = kotlean::jni::fromJava(env, bytes);
     if (!input.get()) return JNI_FALSE;
     return kotlean_test_accepts_out(input.release());
+}
+
+JNIEXPORT jboolean JNICALL Java_io_kotlean_WireNative_acceptsEvent(
+    JNIEnv* env, jobject, jbyteArray bytes) {
+    if (!kotlean::jni::onOwnerThread(env)) return JNI_FALSE;
+    auto input = kotlean::jni::fromJava(env, bytes);
+    if (!input.get()) return JNI_FALSE;
+    return kotlean_test_accepts_event(input.release());
 }
 
 JNIEXPORT jbyteArray JNICALL Java_io_kotlean_WireNative_echo(

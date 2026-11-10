@@ -33,11 +33,11 @@ def childPatches (entries : List (Nat × Node)) : List Patch :=
     node.children.mapIdx (fun index child => .insert parent index child)
 
 def diffScene (old new : Scene) : List Patch :=
-  if sceneObservation old = sceneObservation new then []
+  if equal (sceneObservation old) (sceneObservation new) then []
   else
     removedNodePatches old new ++
     new.nodes.toList.flatMap (fun (id, node) => nodePatches old id node) ++
-    if sceneStructure old = sceneStructure new then []
+    if equal (sceneStructure old) (sceneStructure new) then []
     else childPatches new.nodes.toList ++ [.root new.root]
 
 theorem diffScene_self (state : Scene) : diffScene state state = [] := by
@@ -152,7 +152,7 @@ theorem diffScene_propertyOnly (old new : Scene) (h : sceneStructure old = scene
     (patch : Patch) (hm : patch ∈ diffScene old new) : ∃ id value, patch = .property id value := by
   by_cases he : sceneObservation old = sceneObservation new
   · simp [diffScene, he] at hm
-  · simp only [diffScene, he, ite_false, h, ite_true,
+  · simp only [diffScene, equal_true, he, ite_false, h, ite_true,
       removedNodePatches_of_sameStructure old new h, List.nil_append, List.append_nil] at hm
     obtain ⟨⟨id, after⟩, hn, hp⟩ := List.mem_flatMap.mp hm
     have hn' := Std.ExtTreeMap.mem_toList_iff_getElem?_eq_some.mp hn

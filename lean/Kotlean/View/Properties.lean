@@ -18,14 +18,14 @@ def applyProperty (property : Property) (old : Properties) : Properties := match
   | .drawing value => { old with drawing := value }
   | .listeners value => { old with listeners := value }
 
-private def changed {α : Type} [DecidableEq α] (old new : α) (property : Property) : List Property :=
-  if old = new then [] else [property]
+private def changed {α : Type} [BEq α] (old new : α) (property : Property) : List Property :=
+  if equal old new then [] else [property]
 
-private theorem mem_changed {α : Type} [DecidableEq α] (old new : α) (candidate property : Property) :
+private theorem mem_changed {α : Type} [BEq α] [LawfulBEq α] [DecidableEq α] (old new : α) (candidate property : Property) :
     property ∈ changed old new candidate ↔ old ≠ new ∧ property = candidate := by
   by_cases same : old = new <;> simp [changed, same]
 
-private theorem fold_slot {α : Type} [DecidableEq α] (get : Properties → α)
+private theorem fold_slot {α : Type} [BEq α] [LawfulBEq α] [DecidableEq α] (get : Properties → α)
     (set : α → Properties → Properties) (property : α → Property)
     (restore : ∀ state, set (get state) state = state)
     (interpret : ∀ value state, applyProperty (property value) state = set value state)
@@ -33,11 +33,11 @@ private theorem fold_slot {α : Type} [DecidableEq α] (get : Properties → α)
     (changed (get state) value (property value)).foldl (fun s p => applyProperty p s) state =
       set value state := by
   by_cases same : get state = value
-  · rw [changed, ite_eq_left same]
+  · simp only [changed, equal_true, same, ite_true]
     change state = set value state
     rw [← same]
     exact (restore state).symm
-  · rw [changed, ite_eq_right same]
+  · simp only [changed, equal_true, same, ite_false]
     exact interpret value state
 
 def allProperties (value : Properties) : List Property := [
@@ -113,7 +113,7 @@ theorem mem_diffProperties (old new : Properties) (property : Property) :
     simp [diffProperties, mem_changed, allProperties, eq_comm, and_comm] <;>
     intro same <;> simp_all [eq_comm]
 
-private theorem changed_sublist {α : Type} [DecidableEq α] (old new : α) (property : Property) :
+private theorem changed_sublist {α : Type} [BEq α] [LawfulBEq α] [DecidableEq α] (old new : α) (property : Property) :
     List.Sublist (changed old new property) [property] := by
   by_cases same : old = new <;> simp [changed, same]
 
