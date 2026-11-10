@@ -111,7 +111,7 @@ Development targets: Lean 4.34.0, Android Native Development Kit (NDK) r30, Andr
 compile Software Development Kit (SDK) 37.
 
 SnackNet is a maze-chase game with an AI machine pursued by human operators. Steer by swiping,
-tapping the arrows or using directional keys. The machine moves continuously between cells and
+tapping the D-pad or using directional keys. The machine moves continuously between cells and
 queues a turn until the next junction where it can take it. One operator tracks the machine and
 the other aims ahead of it. Both periodically patrol and keep moving through corridors. Collect
 all thirteen data tokens in the 15-by-13 maze to open the exit. Pick up **Overclock** to transform
@@ -122,7 +122,7 @@ the player's lives.
 A complete Pixel 11 Pro playthrough finished with 130 points and three lives. Android reported
 917 rendered frames and zero janky frames after reset. The final 114 consecutive presentation
 timestamps ran at 60.05 frames per second with a maximum interval of 16.68 ms. For foreground
-device testing, build the debug variant with `-PsnacknetDeviceTest=true`. The flag is off in default debug and
-release builds.
+device testing, build the debug variant with `-PsnacknetDeviceTest=true`. The flag is off in
+default debug and release builds.
 
 Licensed under the [MIT License](LICENSE).

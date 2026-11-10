@@ -201,6 +201,21 @@ def button (label : String) (message : Msg) : Ui Msg :=
     text := label, width := .wrap, height := .dp 48, padding := 14
     background := 0xff304063, events := { click := some message } }
 
+def directionButton (symbol description : String) (direction : Direction) : Ui Msg :=
+  .button {
+    text := symbol, description, width := .dp 58, height := .dp 48, textSize := 26
+    padding := 0, background := 0xff304063, events := { click := some (.steer direction) } }
+
+def directionPad : Ui Msg :=
+  let row : Attributes Msg := { width := .fill, alignment := .center, padding := 2 }
+  .column { width := .fill }
+    [ .row row [directionButton "↑" "Move up" .up]
+    , .row row
+        [ directionButton "←" "Move left" .left
+        , .column { width := .dp 58, height := .dp 0 } []
+        , directionButton "→" "Move right" .right ]
+    , .row row [directionButton "↓" "Move down" .down] ]
+
 def status (model : Model) : String :=
   let game := model.game
   match game.phase with
@@ -224,9 +239,7 @@ def view (model : Model) : Ui Msg :=
         description := "SnackNet maze. Swipe or use the direction keys to steer."
         drawing := drawing model
         events := { touch := some .touch, key := some .key, resize := some .resize } }
-    , .row { width := .fill, alignment := .center, padding := 4 }
-        [button "←" (.steer .left), button "↑" (.steer .up),
-         button "↓" (.steer .down), button "→" (.steer .right)]
+    , directionPad
     , .row { width := .fill, alignment := .center, padding := 4 }
         [button (if model.game.phase = .paused then "Resume" else "Pause") .pause,
          button "Restart" .restart] ]
