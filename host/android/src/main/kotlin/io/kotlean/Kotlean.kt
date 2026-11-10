@@ -18,6 +18,8 @@ import android.util.Log
 import android.view.HapticFeedbackConstants
 import android.widget.TextView
 import java.math.BigInteger
+import java.nio.ByteBuffer
+import java.nio.ByteOrder
 import java.nio.charset.StandardCharsets
 import java.util.ArrayDeque
 import java.util.Collections
@@ -132,7 +134,11 @@ object Kotlean {
                                 val callback = object : Runnable {
                                     override fun run() {
                                         if (closed || subscriptions[value.id] !== active) return
-                                        signal(value)
+                                        val timestamp = ByteBuffer.allocate(Long.SIZE_BYTES)
+                                            .order(ByteOrder.LITTLE_ENDIAN)
+                                            .putLong(SystemClock.uptimeMillis())
+                                            .array()
+                                        signal(value, timestamp)
                                         if (!closed && subscriptions[value.id] === active) {
                                             handler.postAtTime(this, token, Math.addExact(SystemClock.uptimeMillis(), period))
                                         }
@@ -151,8 +157,8 @@ object Kotlean {
             }
         }
 
-        private fun signal(subscription: Subscription) {
-            dispatch(Event.Subscription(subscription.generation, subscription.id, Bytes(byteArrayOf())))
+        private fun signal(subscription: Subscription, payload: ByteArray = byteArrayOf()) {
+            dispatch(Event.Subscription(subscription.generation, subscription.id, Bytes(payload)))
         }
 
         private fun answer(id: BigInteger, reply: Reply) { post { dispatch(Event.Answer(id, reply)) } }

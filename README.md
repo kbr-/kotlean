@@ -104,12 +104,17 @@ The first version runs Lean on the Android main thread. Keep `update` and `view`
 budget: about 16 ms at 60 Hz. Keep saved-instance state small because Android shares its Binder
 transaction buffer across the process's transactions.
 
+Android tick subscriptions deliver the current uptime in milliseconds as eight little-endian
+bytes. Animation can use the elapsed time between ticks, independently of callback timing.
+
 Development targets: Lean 4.34.0, Android Native Development Kit (NDK) r30, Android API 26 or later,
 compile Software Development Kit (SDK) 37.
 
 SnackNet is a maze-chase game with an AI machine pursued by human operators. Steer by swiping,
-tapping the arrows or using directional keys. Collect all nine data tokens to open the exit. Pick up
-**Overclock** to transform the machine into a metal endoskeleton and reverse the chase. The Lean
+tapping the arrows or using directional keys. The machine moves continuously between cells and
+queues a turn until the next junction where it can take it. Collect all nine data tokens to open
+the exit. Pick up **Overclock** to transform the machine into a metal endoskeleton and reverse the
+chase. The Lean
 rules prove that a successful step reaches a neighboring traversable cell, tokens never increase
 during a run and a powered tick preserves the player's lives. A 33-tick completion trace reaches the
 exit with all three lives.

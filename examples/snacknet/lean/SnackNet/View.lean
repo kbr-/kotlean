@@ -18,6 +18,9 @@ structure Swipe where
 structure Model where
   game : Game := initial
   heading : Option Direction := none
+  travel : Option Direction := none
+  progress : Nat := 0
+  lastFrame : Option Nat := none
   display : Display := {}
   swipe : Option Swipe := none
 
@@ -26,7 +29,35 @@ inductive Msg where
   | key (code : Nat) (pressed : Bool)
   | touch (frame : TouchFrame)
   | resize (width height density : Nat)
-  | tick | pause | back | restart | background
+  | frame (now : Nat)
+  | pause | back | restart | background
+
+def cellTime : Nat := 190
+
+def nextDirection (model : Model) : Option Direction :=
+  let legal := fun direction => (neighbor model.game.player direction).isSome
+  (model.heading.filter legal).or (model.travel.filter legal)
+
+def advanceFrame (now : Nat) (model : Model) : Model :=
+  if model.game.phase != .running then model
+  else
+    let elapsed := min cellTime (now - model.lastFrame.getD now)
+    let model := { model with lastFrame := some now }
+    let travel := if model.progress = 0 then nextDirection model else model.travel
+    let progress := model.progress + elapsed
+    if progress < cellTime then { model with travel, progress }
+    else
+      let game := tick travel model.game
+      let arrived := { model with game, travel }
+      if game.lives != model.game.lives || game.phase != .running then
+        { arrived with progress := 0, travel := none }
+      else
+        { arrived with progress := progress - cellTime, travel := nextDirection arrived }
+
+def frameTime (bytes : List UInt8) : Option Msg :=
+  if bytes.length = 8 then
+    some (.frame (bytes.foldr (fun byte time => byte.toNat + 256 * time) 0))
+  else none
 
 def keyDirection : Nat → Option Direction
   | 19 | 51 => some .up
@@ -66,18 +97,18 @@ def update (message : Msg) (model : Model) : Model × List (Cmd Msg) :=
       if pressed then { model with heading := (keyDirection code).or model.heading } else model
     | .touch frame => touchUpdate frame model
     | .resize w h _ => { model with display := ⟨w, h⟩ }
-    | .tick =>
-      if model.heading.isSome then { model with game := tick model.heading model.game } else model
-    | .pause | .back => { model with game := togglePause model.game, swipe := none }
+    | .frame now => advanceFrame now model
+    | .pause | .back =>
+      { model with game := togglePause model.game, swipe := none, lastFrame := none }
     | .restart => { display := model.display }
-    | .background => { model with swipe := none }
+    | .background => { model with swipe := none, lastFrame := none }
   (next, [])
 
 def subscriptions (model : Model) : List (Kotlean.Sub Msg) :=
   let pause : Kotlean.Sub Msg := ⟨.pause, fun _ => some .background⟩
   if model.game.phase = .running then
     [pause, ⟨.back, fun _ => some .back⟩] ++
-      if model.heading.isSome then [⟨.tick 190, fun _ => some .tick⟩] else []
+      if model.heading.isSome then [⟨.tick 8, frameTime⟩] else []
   else [pause]
 
 theorem paused_has_no_timer (model : Model) (h : model.game.phase = .paused) :
@@ -100,31 +131,36 @@ def BoardView.atCell (board : BoardView) (cell : Cell) (x y : Nat) : Point :=
   let origin := board.point cell.val.1.val cell.val.2.val
   ⟨origin.x + Int.ofNat (board.side * x / 10), origin.y + Int.ofNat (board.side * y / 10)⟩
 
+def BoardView.between (board : BoardView) (start finish : Cell) (progress : Nat)
+    (x y : Nat) : Point :=
+  let origin := board.atCell start x y
+  let target := board.atCell finish x y
+  let shift := fun a b => a + (b - a) * Int.ofNat progress / Int.ofNat cellTime
+  ⟨shift origin.x target.x, shift origin.y target.y⟩
+
 def boardTiles (board : BoardView) : List Draw :=
   (List.range height).flatMap fun y =>
     (List.range width).map fun x =>
       let color : UInt32 := if tile x y = '#' then 0xff343f6e else 0xff202841
       .rect (board.point x y) (board.side - 1000) (board.side - 1000) (board.side / 12) color
 
-def human (board : BoardView) (operator : Operator) (powered : Bool) : List Draw :=
-  let cell := operator.position
+def human (board : BoardView) (atPoint : Nat → Nat → Point) (powered : Bool) : List Draw :=
   let s := board.side
   let coat : UInt32 := if powered then 0xffab99e9 else 0xffffb054
-  [ .circle (board.atCell cell 5 3) (s / 6) 0xffffddb4
-  , .rect (board.atCell cell 2 5) (s * 6 / 10) (s * 4 / 10) (s / 10) coat
-  , .line (board.atCell cell 5 6) (board.atCell cell 5 8) (s / 14) 0xff22203a ]
+  [ .circle (atPoint 5 3) (s / 6) 0xffffddb4
+  , .rect (atPoint 2 5) (s * 6 / 10) (s * 4 / 10) (s / 10) coat
+  , .line (atPoint 5 6) (atPoint 5 8) (s / 14) 0xff22203a ]
 
-def robot (board : BoardView) (game : Game) : List Draw :=
-  let cell := game.player
+def robot (board : BoardView) (atPoint : Nat → Nat → Point) (game : Game) : List Draw :=
   let s := board.side
   let metal : UInt32 := if game.power > 0 then 0xffd2d8e7 else 0xff47e5cb
   let face : UInt32 := if game.power > 0 then 0xff222738 else 0xff143f47
   let eye : UInt32 := if game.power > 0 then 0xffff414e else 0xffe8fffc
-  [ .rect (board.atCell cell 1 2) (s * 8 / 10) (s * 6 / 10) (s / 7) metal
-  , .rect (board.atCell cell 2 3) (s * 6 / 10) (s * 4 / 10) (s / 10) face
-  , .circle (board.atCell cell 4 5) (s / 14) eye
-  , .circle (board.atCell cell 6 5) (s / 14) eye
-  , .line (board.atCell cell 5 2) (board.atCell cell 5 1) (s / 16) metal ]
+  [ .rect (atPoint 1 2) (s * 8 / 10) (s * 6 / 10) (s / 7) metal
+  , .rect (atPoint 2 3) (s * 6 / 10) (s * 4 / 10) (s / 10) face
+  , .circle (atPoint 4 5) (s / 14) eye
+  , .circle (atPoint 6 5) (s / 14) eye
+  , .line (atPoint 5 2) (atPoint 5 1) (s / 16) metal ]
 
 def drawing (model : Model) : List Draw :=
   let board := boardView model.display
@@ -137,8 +173,15 @@ def drawing (model : Model) : List Draw :=
     [Draw.polygon [board.atCell powerCell 5 1, board.atCell powerCell 9 5,
       board.atCell powerCell 5 9, board.atCell powerCell 1 5] 0xffffc971]
     else []
-  [.clear 0xff101522] ++ boardTiles board ++ [gate] ++ tokens ++ pickup ++
-    game.operators.flatMap (human board · (game.power > 0)) ++ robot board game
+  let playerTarget := (model.travel.bind (neighbor game.player)).getD game.player
+  let operators := if game.beat = 2 && model.progress > 0 then
+    (tick model.travel { game with phase := .running }).operators else game.operators
+  let humans := (game.operators.zip operators).flatMap fun (operator, next) =>
+    let target := if distance operator.position next.position = 1 then next.position
+      else operator.position
+    human board (board.between operator.position target model.progress) (game.power > 0)
+  [.clear 0xff101522] ++ boardTiles board ++ [gate] ++ tokens ++ pickup ++ humans ++
+    robot board (board.between game.player playerTarget model.progress) game
 
 def button (label : String) (message : Msg) : Ui Msg :=
   .button {
