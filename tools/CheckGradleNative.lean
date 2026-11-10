@@ -101,4 +101,5 @@ end CheckGradleNative
 def main (args : List String) : IO Unit := do
   let [project, gradle, jdk, cache, output] := args
     | throw (IO.userError "Usage: lean --run tools/CheckGradleNative.lean PROJECT GRADLE JDK CACHE EVIDENCE_DIRECTORY")
-  CheckGradleNative.check ⟨project, gradle, jdk, cache, output⟩
+  let base ← IO.currentDir
+  CheckGradleNative.check ⟨base / project, base / gradle, base / jdk, base / cache, base / output⟩

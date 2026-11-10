@@ -156,9 +156,10 @@ def main (args : List String) : IO Unit := do
   let (args, runMutations) := if args.getLast? == some "--mutations" then (args.dropLast, true) else (args, false)
   let [project, cache, jdk] := args
     | throw (IO.userError "Usage: lean --run tools/CheckWireJvm.lean PROJECT GRADLE_CACHE JDK [--mutations]")
-  let project : System.FilePath := project
-  let cache : System.FilePath := cache
-  let jdk : System.FilePath := jdk
+  let base ← IO.currentDir
+  let project : System.FilePath := base / project
+  let cache : System.FilePath := base / cache
+  let jdk : System.FilePath := base / jdk
   let jars ← CheckWireJvm.artifacts.mapM (CheckWireJvm.cached cache)
   let classpath := String.intercalate ":" (jars.map System.FilePath.toString)
   let stdlib := jars[1]!

@@ -90,7 +90,8 @@ def main (args : List String) : IO Unit := do
   let (args, memoryTest) := if args.getLast? == some "--memory-test" then (args.dropLast, true) else (args, false)
   let [project, toolchain, jdk] := args
     | throw (IO.userError "Usage: lean --run tools/BuildWireNative.lean PROJECT TOOLCHAIN JDK [--memory-test]")
-  let config : BuildWireNative.Config := ⟨project, toolchain, jdk⟩
+  let base ← IO.currentDir
+  let config : BuildWireNative.Config := ⟨base / project, base / toolchain, base / jdk⟩
   let mut missing := []
   for path in BuildWireNative.requirements config do
     unless ← path.pathExists do missing := missing ++ [path]
