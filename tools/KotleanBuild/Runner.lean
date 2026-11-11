@@ -39,6 +39,11 @@ def androidHeaderRoots (compiler : FilePath) : IO (List FilePath) := do
   let some ndkToolchain := ndkToolchain | throw (IO.userError "Missing NDK toolchain directory")
   return [ndkToolchain / "sysroot/usr/include", FilePath.mk resource.trimAscii.toString / "include"]
 
+def androidLeanHeaders (compiler work : FilePath) : IO String := do
+  let roots ← androidHeaderRoots compiler
+  let headers ← (roots ++ [work / "include/lean"]).mapM (fun root => directoryDigest root)
+  return (← digest compiler) ++ String.join headers
+
 def observe (work : FilePath) (relative : String) : IO Observations := do
   let path := work / relative
   if ← path.pathExists then return [(relative, some (← digest path))]

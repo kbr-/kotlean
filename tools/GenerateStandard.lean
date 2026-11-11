@@ -23,10 +23,7 @@ def main (args : List String) : IO Unit := do
   let bin := ndk / "toolchains/llvm/prebuilt/linux-x86_64/bin"
   let compiler := bin / "clang"
   let archiver := bin / "llvm-ar"
-  let headerRoots ← KotleanBuild.Runner.androidHeaderRoots compiler
-  let headers ← (headerRoots ++ [work / "include/lean"]).mapM
-    (fun root => KotleanBuild.Runner.directoryDigest root)
-  let headers := (← KotleanBuild.Runner.digest compiler) ++ String.join headers
+  let headers ← KotleanBuild.Runner.androidLeanHeaders compiler work
   IO.println s!"Standard units: {files.size}; workers: {jobs}; selected: {selection}"
   (← IO.getStdout).flush
   let lock ← IO.FS.Handle.mk (work / ".standard.lock") .append

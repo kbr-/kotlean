@@ -19,9 +19,7 @@ def main (args : List String) : IO Unit := do
   let .ok paths := Lean.Json.parse (← IO.FS.readFile source) >>= Lean.fromJson? (α := Array String)
     | throw (IO.userError "Invalid generated-C source list")
   let packageSources := paths.map FilePath.mk
-  let headers := (← Runner.digest (work / "include/lean/config.h")) ++
-    (← Runner.digest (work / "include/lean/lean.h")) ++
-    (← Runner.digest (work / "include/lean/version.h")) ++ (← Runner.digest (ndk / "source.properties"))
+  let headers ← Runner.androidLeanHeaders clang work
   let mut packageObjects := #[]
   for file in packageSources do
     let cDigest ← Runner.digest file
