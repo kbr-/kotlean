@@ -5,6 +5,7 @@ import android.app.Activity
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.Gravity
+import android.view.KeyEvent
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
@@ -36,6 +37,7 @@ internal class AndroidRenderer(private val activity: Activity, private val send:
     private var applying = false
 
     fun apply(patches: List<Patch>, revision: BigInteger) {
+        val focused = content.findFocus()
         applying = true
         try {
             var movesPrepared = false
@@ -74,6 +76,9 @@ internal class AndroidRenderer(private val activity: Activity, private val send:
                 }
             }
             for (record in nodes.values) record.revision = revision
+            if (focused != null && focused.isAttachedToWindow && !focused.hasFocus()) {
+                focused.requestFocus()
+            }
         } finally { applying = false }
     }
 
@@ -197,7 +202,7 @@ internal class AndroidRenderer(private val activity: Activity, private val send:
         } else null)
         view.setOnKeyListener(if (mask.key) View.OnKeyListener { _, code, event ->
             emit(record, Input.Key(BigInteger.valueOf(code.toLong()), event.action == android.view.KeyEvent.ACTION_DOWN))
-            consumesInput
+            consumesInput && code != KeyEvent.KEYCODE_TAB
         } else null)
         if (mask.key) view.isFocusableInTouchMode = true
         if (mask.resize) { record.lastSize = null; view.post { resize(record) } }

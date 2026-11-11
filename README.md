@@ -54,8 +54,9 @@ through updates, saving, restoration and closing. Linux ownership controls compa
 updates and frees with deliberately retained states.
 
 The Lean build executable resolves an app package through Lake and cross-compiles its generated C
-for Android arm64 using the NDK's API 26 target. Runtime imports can use Init, Std and modules
-in the Lake workspace. Use `meta import` for the Lean frontend and Lake. The build generates
+for Android arm64 using the NDK's API 26 target. Runtime imports can use Init, Std and
+workspace modules compiled from Lean. Use `meta import` for the Lean frontend and Lake.
+Custom platform I/O goes through named plugins. The build generates
 Init and Std with the pinned compiler, checks authored
 objects for libc replacements and reuses a complete standard-library archive after checking its
 inputs and bytes. A physical Android device has passed the text-model JNI control. The Android
