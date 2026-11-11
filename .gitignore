@@ -1,4 +1,6 @@
 .lake/
+.deps/
+.cache/
 .gradle/
 **/build/
 .idea/
