@@ -82,7 +82,6 @@ object Kotlean {
             activity.application.registerComponentCallbacks(this)
             configurationRegistered = true
             output(Wire.decodeOut(native!!.initialOutput))
-            dispatch(Event.Lifecycle(false))
         }
 
         private fun post(action: () -> Unit) {
@@ -206,12 +205,10 @@ object Kotlean {
         override fun onActivityResumed(owner: Activity) {
             if (owner !== activity || closed) return
             dispatch(Event.Lifecycle(true))
-            subscriptions.values.map { it.value }.filter { it.source is Source.Resume }.forEach(::signal)
         }
         override fun onActivityPaused(owner: Activity) {
             if (owner !== activity || closed) return
             dispatch(Event.Lifecycle(false))
-            subscriptions.values.map { it.value }.filter { it.source is Source.Pause }.forEach(::signal)
         }
         override fun onActivitySaveInstanceState(owner: Activity, state: Bundle) {
             if (owner !== activity || closed) return
