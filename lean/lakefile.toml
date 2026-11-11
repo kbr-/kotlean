@@ -34,3 +34,7 @@ srcDir = "../host/wire/src/test/lean"
 [[lean_lib]]
 name = "ExportEffects"
 srcDir = "../host/wire/src/test/lean"
+
+[[lean_lib]]
+name = "ExportHostEdges"
+srcDir = "../host/wire/src/test/lean"
