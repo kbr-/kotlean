@@ -10,6 +10,13 @@ def fixture : Kotlean.App := {
   update := fun _ model => (model, [])
   view := fun _ => .column {}
     [ .text { text := "Runtime app", width := .dp 2147483648 }
+    , .row { width := .fill }
+        [ .text {
+            text := "Left", description := "Weight left", width := .dp 0
+            weight := 1000000000000000000000000000000 }
+        , .text {
+            text := "Right", description := "Weight right", width := .dp 0
+            weight := 2000000000000000000000000000000 } ]
     , .canvas {
         width := .dp 32
         height := .dp 32

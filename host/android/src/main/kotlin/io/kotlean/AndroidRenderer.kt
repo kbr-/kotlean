@@ -17,12 +17,13 @@ import android.widget.LinearLayout
 import android.widget.ScrollView
 import android.widget.TextView
 import java.math.BigInteger
+import java.math.BigDecimal
+import java.math.MathContext
 import kotlin.math.roundToInt
 import kotlin.math.roundToLong
 
 internal class AndroidRenderer(private val activity: Activity, private val send: (Event) -> Unit) {
     private val textSizeLimit = BigInteger.valueOf(4096)
-    private val weightLimit = Float.MAX_VALUE / (2f * Int.MAX_VALUE)
     val content = FrameLayout(activity).apply { fitsSystemWindows = true }
     private class Node(val id: BigInteger, val view: View) {
         val nativeClickable = view.isClickable
@@ -45,6 +46,12 @@ internal class AndroidRenderer(private val activity: Activity, private val send:
         applying = true
         try {
             var movesPrepared = false
+            var weightsChanged = false
+            for (patch in patches) {
+                if (patch !is Patch.SetProperty ||
+                    patch.value is Property.Width || patch.value is Property.Height ||
+                    patch.value is Property.Weight) weightsChanged = true
+            }
             for (patch in patches) when (patch) {
                 is Patch.Create -> create(patch.id, patch.kind)
                 is Patch.SetProperty -> property(node(patch.id), patch.value)
@@ -79,6 +86,7 @@ internal class AndroidRenderer(private val activity: Activity, private val send:
                     }
                 }
             }
+            if (weightsChanged) normalizeWeights()
             for (record in nodes.values) record.revision = revision
             if (focused != null && focused.isAttachedToWindow && !focused.hasFocus()) {
                 focused.requestFocus()
@@ -131,16 +139,27 @@ internal class AndroidRenderer(private val activity: Activity, private val send:
         (dp.toDouble() * density).coerceAtMost(View.MEASURED_SIZE_MASK.toDouble()).roundToInt()
 
     private fun layout(record: Node, parent: ViewGroup?): ViewGroup.LayoutParams = when (parent) {
-        is LinearLayout -> LinearLayout.LayoutParams(
-            dimension(record.width), dimension(record.height),
-            record.weight.toFloat().coerceAtMost(weightLimit),
-        )
+        is LinearLayout -> LinearLayout.LayoutParams(dimension(record.width), dimension(record.height), 0f)
         is FrameLayout -> FrameLayout.LayoutParams(dimension(record.width), dimension(record.height))
         else -> ViewGroup.LayoutParams(dimension(record.width), dimension(record.height))
     }
 
     private fun updateLayout(record: Node) {
         record.view.layoutParams = layout(record, record.view.parent as? ViewGroup)
+    }
+
+    private fun normalizeWeights() {
+        val groups = nodes.values.groupBy { it.view.parent as? LinearLayout }
+        for ((parent, children) in groups) {
+            if (parent == null) continue
+            val total = children.fold(BigInteger.ZERO) { sum, child -> sum + child.weight }
+            for (child in children) {
+                val params = child.view.layoutParams as LinearLayout.LayoutParams
+                params.weight = if (total.signum() == 0) 0f else
+                    BigDecimal(child.weight).divide(BigDecimal(total), MathContext.DECIMAL64).toFloat()
+                child.view.layoutParams = params
+            }
+        }
     }
 
     private fun applyPadding(record: Node) {
@@ -235,6 +254,7 @@ internal class AndroidRenderer(private val activity: Activity, private val send:
             applyPadding(record)
             applyTextSize(record)
         }
+        normalizeWeights()
         content.viewTreeObserver.addOnGlobalLayoutListener(object : ViewTreeObserver.OnGlobalLayoutListener {
             override fun onGlobalLayout() {
                 content.viewTreeObserver.removeOnGlobalLayoutListener(this)
