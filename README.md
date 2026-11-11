@@ -5,6 +5,8 @@
 Write an Android app's model, updates, views and effect descriptions in Lean. Compile that Lean to
 native code and run it behind a small Kotlin host.
 
+[Watch SnackNet gameplay (WebM)](docs/snacknet.webm?raw=1)
+
 Call the host from `Activity.onCreate` after `super.onCreate`.
 
 ```kotlin
