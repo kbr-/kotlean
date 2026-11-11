@@ -10,7 +10,11 @@ import java.math.BigInteger
 
 internal class DrawingView(context: Context) : View(context) {
     var operations: List<Draw> = emptyList()
-        set(value) { field = value; invalidate() }
+        set(value) {
+            val clear = value.indexOfLast { it is Draw.Clear }
+            field = if (clear > 0) value.subList(clear, value.size) else value
+            invalidate()
+        }
     private val paint = Paint(Paint.ANTI_ALIAS_FLAG)
     private fun BigInteger.pixels(): Float = toFloat() / 1000f
 

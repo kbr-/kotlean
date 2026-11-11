@@ -21,9 +21,13 @@ import kotlin.math.roundToInt
 import kotlin.math.roundToLong
 
 internal class AndroidRenderer(private val activity: Activity, private val send: (Event) -> Unit) {
+    private val layoutLimit = BigInteger.valueOf(View.MEASURED_SIZE_MASK.toLong())
+    private val textSizeLimit = BigInteger.valueOf(4096)
     val content = FrameLayout(activity).apply { fitsSystemWindows = true }
     private class Node(val id: BigInteger, val view: View) {
         val nativeClickable = view.isClickable
+        val nativeFocusability = view.focusable
+        val nativeTouchFocus = view.isFocusableInTouchMode
         var revision: BigInteger = BigInteger.ZERO
         var width: Dimension = Dimension.Wrap
         var height: Dimension = Dimension.Wrap
@@ -120,11 +124,14 @@ internal class AndroidRenderer(private val activity: Activity, private val send:
     private fun dimension(value: Dimension): Int = when (value) {
         Dimension.Wrap -> ViewGroup.LayoutParams.WRAP_CONTENT
         Dimension.Fill -> ViewGroup.LayoutParams.MATCH_PARENT
-        is Dimension.Dp -> (value.value.intValueExact() * activity.resources.displayMetrics.density).roundToInt()
+        is Dimension.Dp -> pixels(value.value, activity.resources.displayMetrics.density)
     }
 
+    private fun pixels(dp: BigInteger, density: Float): Int =
+        (dp.min(layoutLimit).toDouble() * density).roundToInt().coerceAtMost(View.MEASURED_SIZE_MASK)
+
     private fun layout(record: Node, parent: ViewGroup?): ViewGroup.LayoutParams = when (parent) {
-        is LinearLayout -> LinearLayout.LayoutParams(dimension(record.width), dimension(record.height), record.weight.toFloat())
+        is LinearLayout -> LinearLayout.LayoutParams(dimension(record.width), dimension(record.height), record.weight.min(layoutLimit).toFloat())
         is FrameLayout -> FrameLayout.LayoutParams(dimension(record.width), dimension(record.height))
         else -> ViewGroup.LayoutParams(dimension(record.width), dimension(record.height))
     }
@@ -134,13 +141,12 @@ internal class AndroidRenderer(private val activity: Activity, private val send:
     }
 
     private fun applyPadding(record: Node) {
-        val pixels = (record.padding.intValueExact() *
-            record.view.resources.displayMetrics.density).roundToInt()
+        val pixels = pixels(record.padding, record.view.resources.displayMetrics.density)
         record.view.setPadding(pixels, pixels, pixels, pixels)
     }
 
     private fun applyTextSize(record: Node) {
-        (record.view as? TextView)?.textSize = record.textSize.intValueExact().toFloat()
+        (record.view as? TextView)?.textSize = record.textSize.min(textSizeLimit).toFloat()
     }
 
     private fun property(record: Node, value: Property) {
@@ -204,7 +210,8 @@ internal class AndroidRenderer(private val activity: Activity, private val send:
             emit(record, Input.Key(BigInteger.valueOf(code.toLong()), event.action == android.view.KeyEvent.ACTION_DOWN))
             consumesInput && code != KeyEvent.KEYCODE_TAB
         } else null)
-        if (mask.key) view.isFocusableInTouchMode = true
+        view.isFocusableInTouchMode = mask.key || record.nativeTouchFocus
+        if (!mask.key) view.setFocusable(record.nativeFocusability)
         if (mask.resize) { record.lastSize = null; view.post { resize(record) } }
     }
 

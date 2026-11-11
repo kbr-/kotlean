@@ -5,11 +5,12 @@ meta import Kotlean.Export
 open Kotlean
 
 inductive Msg where
-  | close | touched (frame : TouchFrame) | unexpectedTimer | key
+  | close | touched (frame : TouchFrame) | unexpectedTimer | key (code : Nat)
 
 structure Model where
   fired : Bool := false
   touched : Bool := false
+  observingKeys : Bool := true
 
 def app : App := {
   Model := Model
@@ -19,7 +20,7 @@ def app : App := {
     | .close => (model, [⟨.platform "stop" [], none⟩, ⟨.write "after-close" [1], none⟩])
     | .touched frame => ({ model with touched := model.touched || frame.phase == .down }, [])
     | .unexpectedTimer => ({ model with fired := true }, [])
-    | .key => (model, [])
+    | .key code => ({ model with observingKeys := model.observingKeys && code != 29 }, [])
   view := fun model =>
     let editor : Ui Msg := .input { text := "fixed" }
     let leading : List (Ui Msg) :=
@@ -27,7 +28,7 @@ def app : App := {
           width := .dp 90
           height := .dp 40
           description := "Keyboard probe"
-          events := { key := some (fun _ _ => .key) } }
+          events := { key := if model.observingKeys then some (fun code _ => .key code) else none } }
       , .input { text := "other" } ] ++
       if model.touched then [.column {} [], editor] else [.column {} [editor]]
     let controls : List (Ui Msg) :=
