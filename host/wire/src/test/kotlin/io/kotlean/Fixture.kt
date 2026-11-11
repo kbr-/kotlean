@@ -43,7 +43,7 @@ internal object Fixture {
         Draw.Circle(point(n + 1), n + 6, color(n + 7)),
         Draw.Line(point(n), point(n + 1), n + 8, color(n + 9)),
         Draw.Polygon(List(n.index(4)) { point(n + it) }, color(n + 10)),
-        Draw.Text(point(n + 2), n + 11, label(n), color(n + 12))
+        Draw.Text(point(n + 2), n + 11, label(n), color(n + 12), alignment(n + 13), n + 14)
     )
 
     private fun property(n: BigInteger): Property = when (n.index(14)) {

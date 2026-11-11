@@ -192,7 +192,7 @@ internal object Wire {
         2 -> Draw.Circle(point(), natural(), color())
         3 -> Draw.Line(point(), point(), natural(), color())
         4 -> Draw.Polygon(list { point() }, color())
-        5 -> Draw.Text(point(), natural(), text(), color())
+        5 -> Draw.Text(point(), natural(), text(), color(), alignment(), natural())
         else -> unknown(tag)
     } }
     private fun Reader.mask(): ListenerMask = ListenerMask(boolean(), boolean(), boolean(), boolean(), boolean())

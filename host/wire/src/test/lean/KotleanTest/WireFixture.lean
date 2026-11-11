@@ -39,7 +39,7 @@ def drawing (n : Nat) : List Draw := [
   .circle (position (n + 1)) (n + 6) (UInt32.ofNat (n + 7)),
   .line (position n) (position (n + 1)) (n + 8) (UInt32.ofNat (n + 9)),
   .polygon ((List.range (n % 4)).map fun i => position (n + i)) (UInt32.ofNat (n + 10)),
-  .text (position (n + 2)) (n + 11) (label n) (UInt32.ofNat (n + 12))
+  .text (position (n + 2)) (n + 11) (label n) (UInt32.ofNat (n + 12)) (align (n + 13)) (n + 14)
 ]
 
 def property (n : Nat) : Property := match n % 14 with

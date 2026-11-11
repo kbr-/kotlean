@@ -94,7 +94,10 @@ inductive Draw where
   | circle (center : Point) (radius : Nat) (color : UInt32)
   | line (start finish : Point) (width : Nat) (color : UInt32)
   | polygon (points : List Point) (color : UInt32)
+  -- `alignment` places the text's start, centre or end at `origin`; `weight` is a font weight from
+  -- 100 to 900, 400 regular.
   | text (origin : Point) (size : Nat) (value : String) (color : UInt32)
+      (alignment : Alignment := .start) (weight : Nat := 400)
   deriving DecidableEq, BEq, ReflBEq, LawfulBEq, Repr
 
 structure ListenerMask where

@@ -30,7 +30,7 @@ def rectFields := pair point (pair natural (pair natural (pair natural color)))
 def circleFields := pair point (pair natural color)
 def lineFields := pair point (pair point (pair natural color))
 def polygonFields := pair (list point) color
-def textFields := pair point (pair natural (pair text color))
+def textFields := pair point (pair natural (pair text (pair color (pair alignment natural))))
 
 def drawValue : Draw → UInt8 × List UInt8
   | .clear value => (0, color.write value)
@@ -38,7 +38,8 @@ def drawValue : Draw → UInt8 × List UInt8
   | .circle p radius value => (2, circleFields.write (p, radius, value))
   | .line start finish width value => (3, lineFields.write (start, finish, width, value))
   | .polygon points value => (4, polygonFields.write (points, value))
-  | .text p size value paint => (5, textFields.write (p, size, value, paint))
+  | .text p size value paint align weight =>
+    (5, textFields.write (p, size, value, paint, align, weight))
 
 def parseDraw (value : UInt8 × List UInt8) : Option Draw :=
   if value.1 = 0 then (decode color value.2).map Draw.clear
@@ -52,7 +53,8 @@ def parseDraw (value : UInt8 × List UInt8) : Option Draw :=
   else if value.1 = 4 then
     (decode polygonFields value.2).map fun data => .polygon data.1 data.2
   else if value.1 = 5 then
-    (decode textFields value.2).map fun data => .text data.1 data.2.1 data.2.2.1 data.2.2.2
+    (decode textFields value.2).map fun data =>
+      .text data.1 data.2.1 data.2.2.1 data.2.2.2.1 data.2.2.2.2.1 data.2.2.2.2.2
   else none
 
 def draw : Codec Draw := checked envelope drawValue parseDraw

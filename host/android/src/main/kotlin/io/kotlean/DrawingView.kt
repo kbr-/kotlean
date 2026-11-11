@@ -5,6 +5,7 @@ import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Paint
 import android.graphics.Path
+import android.graphics.Typeface
 import android.view.View
 import java.math.BigInteger
 
@@ -55,9 +56,24 @@ internal class DrawingView(context: Context) : View(context) {
                 is Draw.Text -> {
                     paint.color = operation.color.toInt()
                     paint.textSize = operation.size.pixels()
+                    paint.textAlign = when (operation.alignment) {
+                        Alignment.START -> Paint.Align.LEFT
+                        Alignment.CENTER -> Paint.Align.CENTER
+                        Alignment.FINISH -> Paint.Align.RIGHT
+                    }
+                    paint.typeface = typeface(operation.weight)
                     canvas.drawText(operation.value, operation.origin.x.pixels(), operation.origin.y.pixels(), paint)
+                    paint.textAlign = Paint.Align.LEFT
+                    paint.typeface = null
                 }
             }
         }
+    }
+
+    // Android accepts weights 1 to 1000; a weight outside them draws at the nearest one.
+    private val typefaces = HashMap<Int, Typeface>()
+    private fun typeface(weight: BigInteger): Typeface {
+        val clamped = weight.min(BigInteger.valueOf(1000)).max(BigInteger.ONE).toInt()
+        return typefaces.getOrPut(clamped) { Typeface.create(Typeface.DEFAULT, clamped, false) }
     }
 }

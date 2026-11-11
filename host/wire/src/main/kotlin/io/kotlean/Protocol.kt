@@ -72,7 +72,8 @@ internal sealed interface Draw {
     data class Circle(val center: Point, val radius: BigInteger, val color: Long) : Draw
     data class Line(val start: Point, val finish: Point, val width: BigInteger, val color: Long) : Draw
     data class Polygon(val points: List<Point>, val color: Long) : Draw
-    data class Text(val origin: Point, val size: BigInteger, val value: String, val color: Long) : Draw
+    data class Text(val origin: Point, val size: BigInteger, val value: String, val color: Long,
+        val alignment: Alignment, val weight: BigInteger) : Draw
 }
 
 internal data class ListenerMask(val click: Boolean, val text: Boolean, val touch: Boolean, val key: Boolean, val resize: Boolean)
