@@ -4,7 +4,10 @@ plugins { id("com.android.library") }
 android {
     namespace = "io.kotlean"
     compileSdk = 37
-    defaultConfig { minSdk = 36 }
+    defaultConfig {
+        minSdk = 36
+        consumerProguardFiles("consumer-rules.pro")
+    }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17

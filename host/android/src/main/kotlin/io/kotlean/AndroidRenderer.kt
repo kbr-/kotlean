@@ -8,6 +8,7 @@ import android.view.Gravity
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
+import android.view.ViewTreeObserver
 import android.widget.Button
 import android.widget.EditText
 import android.widget.FrameLayout
@@ -21,9 +22,12 @@ import kotlin.math.roundToLong
 internal class AndroidRenderer(private val activity: Activity, private val send: (Event) -> Unit) {
     val content = FrameLayout(activity).apply { fitsSystemWindows = true }
     private class Node(val id: BigInteger, val view: View) {
+        val nativeClickable = view.isClickable
         var revision: BigInteger = BigInteger.ZERO
         var width: Dimension = Dimension.Wrap
         var height: Dimension = Dimension.Wrap
+        var padding: BigInteger = BigInteger.ZERO
+        var textSize: BigInteger = BigInteger.valueOf(16)
         var weight: BigInteger = BigInteger.ZERO
         var listeners = ListenerMask(false, false, false, false, false)
         var lastSize: Triple<Int, Int, Int>? = null
@@ -40,19 +44,24 @@ internal class AndroidRenderer(private val activity: Activity, private val send:
                 is Patch.Insert -> {
                     val parent = node(patch.parent).view as? ViewGroup ?: error("Non-container parent")
                     val child = node(patch.child)
-                    detach(child.view)
-                    parent.addView(child.view, patch.index.intValueExact(), layout(child, parent))
+                    val index = patch.index.intValueExact()
+                    if (parent.indexOfChild(child.view) != index) {
+                        detach(child.view)
+                        parent.addView(child.view, index, layout(child, parent))
+                    }
                 }
                 is Patch.Remove -> {
                     val removed = nodes.remove(patch.id) ?: error("Missing removed node")
                     detach(removed.view)
                 }
                 is Patch.Root -> {
-                    content.removeAllViews()
-                    patch.id?.let { id ->
-                        val root = node(id)
-                        detach(root.view)
-                        content.addView(root.view, layout(root, content))
+                    val root = patch.id?.let(::node)
+                    if (root == null || content.childCount != 1 || content.getChildAt(0) !== root.view) {
+                        content.removeAllViews()
+                        if (root != null) {
+                            detach(root.view)
+                            content.addView(root.view, layout(root, content))
+                        }
                     }
                 }
             }
@@ -111,6 +120,16 @@ internal class AndroidRenderer(private val activity: Activity, private val send:
         record.view.layoutParams = layout(record, record.view.parent as? ViewGroup)
     }
 
+    private fun applyPadding(record: Node) {
+        val pixels = (record.padding.intValueExact() *
+            record.view.resources.displayMetrics.density).roundToInt()
+        record.view.setPadding(pixels, pixels, pixels, pixels)
+    }
+
+    private fun applyTextSize(record: Node) {
+        (record.view as? TextView)?.textSize = record.textSize.intValueExact().toFloat()
+    }
+
     private fun property(record: Node, value: Property) {
         val view = record.view
         when (value) {
@@ -121,11 +140,11 @@ internal class AndroidRenderer(private val activity: Activity, private val send:
             is Property.Width -> { record.width = value.value; updateLayout(record) }
             is Property.Height -> { record.height = value.value; updateLayout(record) }
             is Property.Padding -> {
-                val pixels = (value.value.intValueExact() * activity.resources.displayMetrics.density).roundToInt()
-                view.setPadding(pixels, pixels, pixels, pixels)
+                record.padding = value.value
+                applyPadding(record)
             }
             is Property.Weight -> { record.weight = value.value; updateLayout(record) }
-            is Property.TextSize -> (view as? TextView)?.textSize = value.value.intValueExact().toFloat()
+            is Property.TextSize -> { record.textSize = value.value; applyTextSize(record) }
             is Property.Enabled -> view.isEnabled = value.value
             is Property.Description -> view.contentDescription = value.value
             is Property.Align -> {
@@ -145,8 +164,9 @@ internal class AndroidRenderer(private val activity: Activity, private val send:
     private fun listeners(record: Node, mask: ListenerMask) {
         val view = record.view
         record.listeners = mask
+        val consumesInput = !mask.click && view !is EditText && view !is ScrollView
         view.setOnClickListener(if (mask.click) View.OnClickListener { emit(record, Input.Click) } else null)
-        view.isClickable = mask.click
+        view.isClickable = mask.click || record.nativeClickable
         view.setOnTouchListener(if (mask.touch) View.OnTouchListener { _, event ->
             val phase = when (event.actionMasked) {
                 MotionEvent.ACTION_DOWN, MotionEvent.ACTION_POINTER_DOWN -> TouchPhase.DOWN
@@ -165,11 +185,11 @@ internal class AndroidRenderer(private val activity: Activity, private val send:
                 emit(record, Input.Touch(TouchFrame(phase, BigInteger.valueOf(event.actionIndex.toLong()),
                     BigInteger.valueOf(event.eventTime), contacts)))
             }
-            true
+            consumesInput
         } else null)
         view.setOnKeyListener(if (mask.key) View.OnKeyListener { _, code, event ->
             emit(record, Input.Key(BigInteger.valueOf(code.toLong()), event.action == android.view.KeyEvent.ACTION_DOWN))
-            true
+            consumesInput
         } else null)
         if (mask.key) view.isFocusableInTouchMode = true
         if (mask.resize) { record.lastSize = null; view.post { resize(record) } }
@@ -186,5 +206,18 @@ internal class AndroidRenderer(private val activity: Activity, private val send:
         }
     }
 
-    fun refreshSizes() { for (record in nodes.values.toList()) resize(record) }
+    fun refreshConfiguration() {
+        for (record in nodes.values) {
+            updateLayout(record)
+            applyPadding(record)
+            applyTextSize(record)
+        }
+        content.viewTreeObserver.addOnGlobalLayoutListener(object : ViewTreeObserver.OnGlobalLayoutListener {
+            override fun onGlobalLayout() {
+                content.viewTreeObserver.removeOnGlobalLayoutListener(this)
+                for (record in nodes.values.toList()) resize(record)
+            }
+        })
+        content.requestLayout()
+    }
 }

@@ -55,10 +55,19 @@ object Kotlean {
             host.start(savedInstanceState?.getByteArray(stateKey))
             host
         } catch (error: Throwable) {
-            host?.close()
+            runCatching {
+                val started = host
+                if (started == null) closePlugins(plugins.values) else started.close()
+            }.onFailure { Log.e("Kotlean", "Startup cleanup failed", it) }
             failure(activity, error)
             AutoCloseable { }
         }
+    }
+
+    private fun closePlugins(plugins: Collection<PlatformPlugin>) {
+        val owned = Collections.newSetFromMap(IdentityHashMap<PlatformPlugin, Boolean>())
+        owned.addAll(plugins)
+        for (plugin in owned) runCatching { plugin.close() }.onFailure { Log.e("Kotlean", "Plugin close failed", it) }
     }
 
     private fun failure(activity: Activity, error: Throwable) {
@@ -238,7 +247,7 @@ object Kotlean {
         override fun onActivityCreated(owner: Activity, state: Bundle?) = Unit
         override fun onActivityStarted(owner: Activity) = Unit
         override fun onActivityStopped(owner: Activity) = Unit
-        override fun onConfigurationChanged(configuration: Configuration) { post(renderer::refreshSizes) }
+        override fun onConfigurationChanged(configuration: Configuration) { post(renderer::refreshConfiguration) }
         @Suppress("OVERRIDE_DEPRECATION")
         override fun onLowMemory() = Unit
 
@@ -262,9 +271,7 @@ object Kotlean {
             activity.window.decorView.setTag(R.id.kotlean_owner, null)
             try { native?.close() } finally {
                 native = null
-                val owned = Collections.newSetFromMap(IdentityHashMap<PlatformPlugin, Boolean>())
-                owned.addAll(plugins.values)
-                for (plugin in owned) runCatching { plugin.close() }.onFailure { Log.e("Kotlean", "Plugin close failed", it) }
+                closePlugins(plugins.values)
             }
         }
     }
