@@ -21,8 +21,8 @@ import kotlin.math.roundToInt
 import kotlin.math.roundToLong
 
 internal class AndroidRenderer(private val activity: Activity, private val send: (Event) -> Unit) {
-    private val layoutLimit = BigInteger.valueOf(View.MEASURED_SIZE_MASK.toLong())
     private val textSizeLimit = BigInteger.valueOf(4096)
+    private val weightLimit = Float.MAX_VALUE / (2f * Int.MAX_VALUE)
     val content = FrameLayout(activity).apply { fitsSystemWindows = true }
     private class Node(val id: BigInteger, val view: View) {
         val nativeClickable = view.isClickable
@@ -128,10 +128,13 @@ internal class AndroidRenderer(private val activity: Activity, private val send:
     }
 
     private fun pixels(dp: BigInteger, density: Float): Int =
-        (dp.min(layoutLimit).toDouble() * density).roundToInt().coerceAtMost(View.MEASURED_SIZE_MASK)
+        (dp.toDouble() * density).coerceAtMost(View.MEASURED_SIZE_MASK.toDouble()).roundToInt()
 
     private fun layout(record: Node, parent: ViewGroup?): ViewGroup.LayoutParams = when (parent) {
-        is LinearLayout -> LinearLayout.LayoutParams(dimension(record.width), dimension(record.height), record.weight.min(layoutLimit).toFloat())
+        is LinearLayout -> LinearLayout.LayoutParams(
+            dimension(record.width), dimension(record.height),
+            record.weight.toFloat().coerceAtMost(weightLimit),
+        )
         is FrameLayout -> FrameLayout.LayoutParams(dimension(record.width), dimension(record.height))
         else -> ViewGroup.LayoutParams(dimension(record.width), dimension(record.height))
     }
