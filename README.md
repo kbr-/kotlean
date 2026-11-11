@@ -12,7 +12,11 @@ gestures and timers enter that same state machine.
 
 ## See it running
 
-[Watch SnackNet on a Pixel — WebM, 18 seconds](docs/snacknet.webm?raw=1)
+<div align="center">
+
+https://github.com/user-attachments/assets/448f86d3-7b9e-4f29-8ada-afcb71112eef
+
+</div>
 
 SnackNet is an original maze-chase game written in Lean. An AI machine collects thirteen data tokens
 while two human operators track and intercept it. **Overclock** turns the machine into a metal
