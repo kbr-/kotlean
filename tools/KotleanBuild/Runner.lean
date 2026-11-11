@@ -10,6 +10,9 @@ open System KotleanBuild
 def execute (command : String) (arguments : Array String) : IO String := do
   let result ← IO.Process.output {cmd := command, args := arguments}
   if result.exitCode != 0 then
+    -- Lake writes each compiler error to standard output and only its summary to standard error,
+    -- so a failure shows both.
+    IO.eprint result.stdout
     IO.eprint result.stderr
     throw (IO.userError s!"Command failed ({result.exitCode}): {command}")
   return result.stdout
