@@ -1,4 +1,4 @@
-// no_python: Android and JVM callers require fixed protocol value representations.
+// no_kotlin: Android and JVM callers require fixed protocol value representations.
 package io.kotlean
 
 import java.math.BigInteger

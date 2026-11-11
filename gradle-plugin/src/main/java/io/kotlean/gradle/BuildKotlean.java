@@ -1,4 +1,4 @@
-// no_python: Gradle task execution uses its JVM I/O API and delegates compilation to Lean.
+// no_java: Gradle task execution uses its JVM I/O API and delegates compilation to Lean.
 package io.kotlean.gradle;
 
 import java.io.File;

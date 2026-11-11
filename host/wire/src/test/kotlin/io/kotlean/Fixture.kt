@@ -1,4 +1,4 @@
-// no_python: Expected JVM values are constructed independently of the wire codec.
+// no_kotlin: Expected JVM values are constructed independently of the wire codec.
 package io.kotlean
 
 import java.math.BigInteger

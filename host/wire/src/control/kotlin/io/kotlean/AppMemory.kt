@@ -1,4 +1,4 @@
-// no_python: This JVM control measures the real JNI application's native allocation lifetime.
+// no_kotlin: This JVM control measures the real JNI application's native allocation lifetime.
 package io.kotlean
 
 import java.math.BigInteger

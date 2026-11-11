@@ -1,4 +1,4 @@
-// no_python: Kotlin binds the fixed byte protocol to Android and JVM consumers.
+// no_kotlin: Kotlin binds the fixed byte protocol to Android and JVM consumers.
 package io.kotlean
 
 import java.io.ByteArrayOutputStream

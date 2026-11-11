@@ -1,4 +1,4 @@
-// no_python: This JVM property control uses the cached Kotlin compiler and real JNI oracle.
+// no_kotlin: This JVM property control uses the cached Kotlin compiler and real JNI oracle.
 package io.kotlean
 
 import java.util.Random

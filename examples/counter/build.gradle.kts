@@ -1,4 +1,4 @@
-// no_python: Android packaging uses the Kotlean Gradle plugin.
+// no_kotlin: Android packaging uses the Kotlean Gradle plugin.
 plugins {
     id("com.android.application")
     id("io.kotlean")

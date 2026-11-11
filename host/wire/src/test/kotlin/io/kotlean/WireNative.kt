@@ -1,4 +1,4 @@
-// no_python: These test calls load and execute the compiled Lean JNI oracle.
+// no_kotlin: These test calls load and execute the compiled Lean JNI oracle.
 package io.kotlean
 
 import java.util.concurrent.Callable

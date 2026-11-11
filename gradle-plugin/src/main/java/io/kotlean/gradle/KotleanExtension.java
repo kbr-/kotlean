@@ -1,4 +1,4 @@
-// no_python: Gradle requires JVM property types for its managed extension.
+// no_java: Gradle requires JVM property types for its managed extension.
 package io.kotlean.gradle;
 
 import org.gradle.api.file.DirectoryProperty;

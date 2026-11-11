@@ -1,4 +1,4 @@
-// no_python: This JVM control exercises a failing generated module initializer through JNI.
+// no_kotlin: This JVM control exercises a failing generated module initializer through JNI.
 package io.kotlean
 
 fun main(args: Array<String>) {

@@ -1,4 +1,4 @@
-// no_python: This JVM control exercises opaque app state through production JNI.
+// no_kotlin: This JVM control exercises opaque app state through production JNI.
 package io.kotlean
 
 import java.math.BigInteger

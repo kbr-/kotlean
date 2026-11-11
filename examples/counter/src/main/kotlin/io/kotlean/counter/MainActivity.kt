@@ -1,4 +1,4 @@
-// no_python: Android requires an Activity entry point.
+// no_kotlin: Android requires an Activity entry point.
 package io.kotlean.counter
 
 import android.app.Activity

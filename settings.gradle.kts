@@ -1,4 +1,4 @@
-// no_python: Gradle requires a Kotlin DSL settings entry point.
+// no_kotlin: Gradle requires a Kotlin DSL settings entry point.
 pluginManagement {
     includeBuild("gradle-plugin")
     repositories { google(); mavenCentral() }

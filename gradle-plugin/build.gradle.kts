@@ -1,4 +1,4 @@
-// no_python: Gradle's plugin-development APIs require a JVM build definition.
+// no_kotlin: Gradle's plugin-development APIs require a JVM build definition.
 plugins {
     id("java-gradle-plugin")
 }

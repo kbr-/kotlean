@@ -1,4 +1,4 @@
-// no_python: The Android Gradle plugin builds the fixed platform adapter.
+// no_kotlin: The Android Gradle plugin builds the fixed platform adapter.
 plugins { id("com.android.library") }
 
 android {

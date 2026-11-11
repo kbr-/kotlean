@@ -1,4 +1,4 @@
-// no_python: Android owns widget objects, native layout, drawing and input callbacks.
+// no_kotlin: Android owns widget objects, native layout, drawing and input callbacks.
 package io.kotlean
 
 import android.app.Activity

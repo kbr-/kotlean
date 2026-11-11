@@ -1,4 +1,4 @@
-// no_python: This activity-scoped adapter performs Android effects and feeds the proved Lean
+// no_kotlin: This activity-scoped adapter performs Android effects and feeds the proved Lean
 // runtime.
 package io.kotlean
 

@@ -1,4 +1,4 @@
-// no_python: Android exposes distinct legacy and modern back callback APIs.
+// no_kotlin: Android exposes distinct legacy and modern back callback APIs.
 package io.kotlean
 
 import android.annotation.TargetApi

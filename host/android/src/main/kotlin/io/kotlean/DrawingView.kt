@@ -1,4 +1,4 @@
-// no_python: Android Canvas is the physical interpreter for the fixed drawing protocol.
+// no_kotlin: Android Canvas is the physical interpreter for the fixed drawing protocol.
 package io.kotlean
 
 import android.content.Context

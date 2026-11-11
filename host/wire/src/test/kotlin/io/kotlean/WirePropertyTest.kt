@@ -1,4 +1,4 @@
-// no_python: Kotest samples the real JVM codec and native Lean/JNI implementation.
+// no_kotlin: Kotest samples the real JVM codec and native Lean/JNI implementation.
 package io.kotlean
 
 import io.kotest.core.spec.style.StringSpec

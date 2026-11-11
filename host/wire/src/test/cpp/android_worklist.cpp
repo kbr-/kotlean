@@ -1,4 +1,4 @@
-// no_python: This control needs native pointer words and the runtime's private C++ worklist.
+// no_cpp: This control needs native pointer words and the runtime's private C++ worklist.
 #include KOTLEAN_RUNTIME_OBJECT
 #include <algorithm>
 #include <cstdint>

@@ -1,4 +1,4 @@
-// no_python: Lean's Android runtime requires this C configuration header.
+// no_c: Lean's Android runtime requires this C configuration header.
 #pragma once
 #include <lean/version.h>
 #include <stdlib.h>

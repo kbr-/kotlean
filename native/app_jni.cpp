@@ -1,4 +1,4 @@
-// no_python: JNI requires native object ownership and Java field and byte-array access.
+// no_cpp: JNI requires native object ownership and Java field and byte-array access.
 #include "kotlean_jni.hpp"
 
 #ifndef KOTLEAN_INITIALIZER

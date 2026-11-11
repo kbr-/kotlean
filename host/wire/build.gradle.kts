@@ -1,4 +1,4 @@
-// no_python: Gradle's JVM plugin provides Kotlin compilation and test execution.
+// no_kotlin: Gradle's JVM plugin provides Kotlin compilation and test execution.
 plugins { id("org.jetbrains.kotlin.jvm") }
 
 kotlin {

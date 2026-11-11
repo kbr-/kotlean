@@ -1,4 +1,4 @@
-// no_python: This JVM control exercises the actual native ABI and byte-array transport.
+// no_java: This JVM control exercises the actual native ABI and byte-array transport.
 package io.kotlean;
 
 import java.util.Arrays;

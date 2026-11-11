@@ -1,4 +1,4 @@
-// no_python: This exposes compiled Lean test oracles through the real JNI byte helpers.
+// no_cpp: This exposes compiled Lean test oracles through the real JNI byte helpers.
 #include "kotlean_jni.hpp"
 #include <lean/mimalloc.h>
 #include <stdlib.h>

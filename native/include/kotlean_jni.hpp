@@ -1,4 +1,4 @@
-// no_python: JNI requires C++ ownership and byte-array access.
+// no_cpp: JNI requires C++ ownership and byte-array access.
 #pragma once
 
 #include <jni.h>

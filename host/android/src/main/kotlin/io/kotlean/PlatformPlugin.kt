@@ -1,4 +1,4 @@
-// no_python: Android plugins provide platform I/O with byte-only replies.
+// no_kotlin: Android plugins provide platform I/O with byte-only replies.
 package io.kotlean
 
 import android.app.Activity

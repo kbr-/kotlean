@@ -1,4 +1,4 @@
-// no_python: Gradle and AGP expose JVM APIs; dependency discovery and compilation stay in Lean.
+// no_java: Gradle and AGP expose JVM APIs; dependency discovery and compilation stay in Lean.
 package io.kotlean.gradle;
 
 import com.android.build.api.variant.ApplicationAndroidComponentsExtension;

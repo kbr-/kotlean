@@ -1,4 +1,4 @@
-// no_python: The JVM ownership control reads the real Lean allocator and retains a leaking control.
+// no_cpp: The JVM ownership control reads the real Lean allocator and retains a leaking control.
 #include "kotlean_jni.hpp"
 #include <lean/mimalloc.h>
 #include <stdlib.h>
