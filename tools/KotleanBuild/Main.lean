@@ -40,7 +40,8 @@ def main (args : List String) : IO Unit := do
   let project := sdk.pkg.dir.parent.getD sdk.pkg.dir
   let bin := ndk / "toolchains/llvm/prebuilt/linux-x86_64/bin"
   let prerequisites := [toolchain / "bin/lean", toolchain / "bin/lake", ndk / "source.properties",
-    bin / "clang", bin / "clang++", bin / "llvm-nm", bin / "llvm-ar", toolchain / "include/lean/version.h",
+    bin / "clang", bin / "clang++", bin / "ld.lld", bin / "llvm-nm", bin / "llvm-ar",
+    toolchain / "include/lean/version.h",
     toolchain / "src/lean/Init.lean", toolchain / "src/lean/Std.lean",
     runtime / "src/runtime/object.cpp", libuv / "build/libuv.a", app.leanFile,
     project / "native/android/lean/config.h", project / "native/android/object-full-pointers.patch",
@@ -85,6 +86,14 @@ def main (args : List String) : IO Unit := do
       emitDirectory directory
     for directory in ← Runner.androidHeaderRoots (bin / "clang") do
       emitDirectory directory
+    let abiLibraries := bin / "../sysroot/usr/lib/aarch64-linux-android"
+    for file in ← abiLibraries.readDir do
+      unless (← file.path.isDir) do emit file.path
+    emitDirectory (abiLibraries / "26")
+    let resource ← Runner.execute (bin / "clang").toString #["-print-resource-dir"]
+    let builtins := FilePath.mk resource.trimAscii.toString / "lib/linux"
+    for file in ← builtins.readDir do
+      if file.fileName.endsWith "-aarch64-android.a" then emit file.path
     return
   IO.FS.createDirAll work
   let cacheLock ← IO.FS.Handle.mk (work / ".build.lock") .append
