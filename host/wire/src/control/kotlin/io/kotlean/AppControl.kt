@@ -6,9 +6,66 @@ import kotlin.random.Random
 
 private fun changes(bytes: ByteArray): Output = (Wire.decodeOut(bytes) as Out.Changes).value
 
+private fun counterControl() {
+    val openStart = System.nanoTime()
+    val session = NativeSession(Wire.encodeInit(null))
+    val openNs = System.nanoTime() - openStart
+    session.use {
+        var current = changes(session.initialOutput)
+        val read = current.commands.single()
+        check(read.effect == Effect.Read("counter"))
+        fun send(event: Event): Output = changes(session.step(Wire.encodeEvent(event))).also { current = it }
+        fun click(id: Long): Output = send(Event.Node(current.revision, BigInteger.valueOf(id), Input.Click))
+        fun hasCount(output: Output, count: String): Boolean =
+            output.patches.contains(Patch.SetProperty(BigInteger.valueOf(3), Property.Text(count)))
+        send(Event.Answer(read.id, Reply.Error("empty storage")))
+        val delay = click(7).commands.single()
+        check(delay.effect == Effect.Delay(BigInteger.valueOf(500)))
+        val unknown = Event.Answer(delay.id + BigInteger.ONE, Reply.Ok(Bytes(byteArrayOf())))
+        check(Wire.decodeOut(session.step(Wire.encodeEvent(unknown))) == Out.Ignored(null))
+        val answer = Event.Answer(delay.id, Reply.Ok(Bytes(byteArrayOf())))
+        val incremented = send(answer)
+        check(hasCount(incremented, "1"))
+        val stored = (incremented.commands.single().effect as Effect.Write).value
+        check(Wire.decodeOut(session.step(Wire.encodeEvent(answer))) == Out.Ignored(null))
+        check(hasCount(click(5), "0"))
+        check(hasCount(click(6), "1"))
+        check(hasCount(click(8), "0"))
+        NativeSession(Wire.encodeInit(stored)).use { restored ->
+            check(hasCount(changes(restored.initialOutput), "1"))
+        }
+        NativeSession(Wire.encodeInit(null)).use { disk ->
+            val diskRead = changes(disk.initialOutput).commands.single()
+            check(hasCount(changes(disk.step(Wire.encodeEvent(Event.Answer(diskRead.id, Reply.Ok(stored))))), "1"))
+        }
+        NativeSession(Wire.encodeInit(Bytes(byteArrayOf(-128)))).use { invalid ->
+            check(hasCount(changes(invalid.initialOutput), "0"))
+        }
+        val samples = LongArray(1000)
+        repeat(1100) { i ->
+            val packet = Wire.encodeEvent(Event.Node(current.revision, BigInteger.valueOf(6), Input.Click))
+            val before = System.nanoTime()
+            val response = session.step(packet)
+            val elapsed = System.nanoTime() - before
+            current = changes(response)
+            check(hasCount(current, (i + 1).toString()))
+            if (i >= 100) samples[i - 100] = elapsed
+        }
+        samples.sort()
+        println("Counter JNI timing ns: session_open=$openNs step_p50=${samples[499]} step_p95=${samples[949]} samples=${samples.size}")
+    }
+    session.close()
+    check(Wire.decodeOut(session.step(Wire.encodeEvent(Event.Save))) == Out.Ignored(null))
+    println("Counter JNI control passed: request IDs, duplicate answer, storage bytes, snapshot, invalid snapshot and repeated close")
+}
+
 fun main(args: Array<String>) {
-    require(args.size == 2) { "Expected native library path and nat|text" }
+    require(args.size == 2) { "Expected native library path and nat|text|counter" }
     System.load(args[0])
+    if (args[1] == "counter") {
+        counterControl()
+        return
+    }
     val random = Random(715091)
     val nat = args[1] == "nat"
     require(nat || args[1] == "text")

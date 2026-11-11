@@ -30,3 +30,7 @@ srcDir = "../host/wire/src/test/lean"
 [[lean_lib]]
 name = "ExportFailure"
 srcDir = "../host/wire/src/test/lean"
+
+[[lean_lib]]
+name = "ExportEffects"
+srcDir = "../host/wire/src/test/lean"
