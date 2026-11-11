@@ -11,11 +11,15 @@ def bytes : Codec (List UInt8) := list byte
 def sourceValue : Source → UInt8 × List UInt8
   | .tick ms => (0, natural.write ms)
   | .back => (1, []) | .pause => (2, []) | .resume => (3, [])
+  | .platform name value => (4, (pair text bytes).write (name, value))
 
 def parseSource (value : UInt8 × List UInt8) : Option Source :=
   if value.1 = 0 then (decode natural value.2).map Source.tick
   else if value.1 = 1 then some .back else if value.1 = 2 then some .pause
-  else if value.1 = 3 then some .resume else none
+  else if value.1 = 3 then some .resume
+  else if value.1 = 4 then
+    (decode (pair text bytes) value.2).map fun data => .platform data.1 data.2
+  else none
 
 def source : Codec Source := checked envelope sourceValue parseSource
   (by intro value; cases value <;> simp [sourceValue, parseSource, decode_write])

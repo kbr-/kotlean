@@ -90,7 +90,14 @@ object Kotlean {
         private var configurationRegistered = false
         private var native: NativeSession? = null
         private val renderer = AndroidRenderer(activity, ::dispatch)
-        private class ActiveSubscription(val value: Subscription) { var callback: Runnable? = null }
+        private class ActiveSubscription(val value: Subscription) {
+            var callback: Runnable? = null
+            var stream: AutoCloseable? = null
+            fun stop() {
+                stream?.let { runCatching { it.close() }.onFailure { Log.e("Kotlean", "Subscription close failed", it) } }
+                stream = null
+            }
+        }
         private val subscriptions = mutableMapOf<BigInteger, ActiveSubscription>()
         private var back: BackBridge? = null
         private val storage = activity.getSharedPreferences("kotlean.$library", Context.MODE_PRIVATE)
@@ -141,6 +148,7 @@ object Kotlean {
                             val active = subscriptions[change.id]
                             if (active?.value?.generation == change.generation) {
                                 active.callback?.let(handler::removeCallbacks)
+                                active.stop()
                                 subscriptions.remove(change.id)
                             }
                         }
@@ -167,6 +175,12 @@ object Kotlean {
                                 }
                                 active.callback = callback
                                 handler.postAtTime(callback, token, deadline(period))
+                            } else if (source is Source.Platform) {
+                                val plugin = plugins[source.name] ?: error("Unknown platform plugin: ${source.name}")
+                                active.stream = plugin.subscribe(activity, source.payload.array()) { payload ->
+                                    val copy = payload.copyOf()
+                                    post { if (subscriptions[value.id] === active) signal(value, copy) }
+                                }
                             }
                         }
                     }
@@ -257,6 +271,7 @@ object Kotlean {
             closed = true
             handler.removeCallbacksAndMessages(token)
             queue.clear()
+            for (active in subscriptions.values) active.stop()
             subscriptions.clear()
             back?.close()
             back = null

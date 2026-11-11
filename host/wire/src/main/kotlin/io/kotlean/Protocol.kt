@@ -44,6 +44,7 @@ internal sealed interface Source {
     data object Back : Source
     data object Pause : Source
     data object Resume : Source
+    data class Platform(val name: String, val payload: Bytes) : Source
 }
 
 internal sealed interface Effect {

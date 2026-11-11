@@ -170,7 +170,8 @@ internal object Wire {
         4 -> NodeKind.INPUT; 5 -> NodeKind.SCROLL; 6 -> NodeKind.CANVAS; else -> unknown(tag)
     } }
     private fun Reader.source(): Source = frame { tag -> when (tag) {
-        0 -> Source.Tick(natural()); 1 -> Source.Back; 2 -> Source.Pause; 3 -> Source.Resume; else -> unknown(tag)
+        0 -> Source.Tick(natural()); 1 -> Source.Back; 2 -> Source.Pause; 3 -> Source.Resume
+        4 -> Source.Platform(text(), Bytes(bytes())); else -> unknown(tag)
     } }
     private fun Reader.effect(): Effect = frame { tag -> when (tag) {
         0 -> Effect.Delay(natural()); 1 -> Effect.Read(text()); 2 -> Effect.Write(text(), Bytes(bytes()))

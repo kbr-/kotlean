@@ -26,8 +26,9 @@ def dimension (n : Nat) : Dimension := match n % 3 with
 def align (n : Nat) : Alignment := match n % 3 with
   | 0 => .start | 1 => .center | _ => .finish
 
-def source (n : Nat) : Source := match n % 4 with
-  | 0 => .tick (n + 1) | 1 => .back | 2 => .pause | _ => .resume
+def source (n : Nat) : Source := match n % 5 with
+  | 0 => .tick (n + 1) | 1 => .back | 2 => .pause | 3 => .resume
+  | _ => .platform (label n) (payload n)
 
 def mask (n : Nat) : ListenerMask :=
   ⟨flag n 0, flag n 1, flag n 2, flag n 3, flag n 4⟩

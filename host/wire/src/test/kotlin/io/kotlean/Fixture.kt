@@ -30,8 +30,9 @@ internal object Fixture {
     private fun alignment(n: BigInteger): Alignment = when (n.index(3)) {
         0 -> Alignment.START; 1 -> Alignment.CENTER; else -> Alignment.FINISH
     }
-    private fun source(n: BigInteger): Source = when (n.index(4)) {
-        0 -> Source.Tick(n + 1); 1 -> Source.Back; 2 -> Source.Pause; else -> Source.Resume
+    private fun source(n: BigInteger): Source = when (n.index(5)) {
+        0 -> Source.Tick(n + 1); 1 -> Source.Back; 2 -> Source.Pause; 3 -> Source.Resume
+        else -> Source.Platform(label(n), payload(n))
     }
     private fun mask(n: BigInteger): ListenerMask =
         ListenerMask(flag(n, 0), flag(n, 1), flag(n, 2), flag(n, 3), flag(n, 4))

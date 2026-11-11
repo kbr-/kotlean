@@ -5,8 +5,11 @@ public import Kotlean.App
 
 namespace Kotlean.Runtime.Subscriptions
 
+-- A timer or a platform stream runs only while the session is active; lifecycle and Back sources stay
+-- installed so the app sees the session pause and resume.
 def enabled (active : Bool) : Source → Bool
   | .tick _ => active
+  | .platform _ _ => active
   | _ => true
 
 def unique : List Source → List Source

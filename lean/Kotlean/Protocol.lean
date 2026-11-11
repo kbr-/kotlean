@@ -41,6 +41,7 @@ inductive Input where
 inductive Source where
   | tick (milliseconds : Nat)
   | back | pause | resume
+  | platform (name : String) (payload : List UInt8)
   deriving DecidableEq, BEq, ReflBEq, LawfulBEq, Repr
 
 inductive Reply where
