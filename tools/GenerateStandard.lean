@@ -20,10 +20,13 @@ def main (args : List String) : IO Unit := do
   if files.isEmpty then throw (IO.userError "No standard-library source selected")
   let version ← KotleanBuild.Runner.execute (toolchain / "bin/lean").toString #["--version"]
   let context := version ++ (← KotleanBuild.Runner.digest (toolchain / "lib/lean/libleanshared.so"))
-  let headers := (← KotleanBuild.Runner.digest (work / "include/lean/lean.h")) ++
-    (← KotleanBuild.Runner.digest (work / "include/lean/config.h")) ++
-    (← KotleanBuild.Runner.digest (work / "include/lean/version.h")) ++
-    (← KotleanBuild.Runner.digest (ndk / "source.properties"))
+  let bin := ndk / "toolchains/llvm/prebuilt/linux-x86_64/bin"
+  let compiler := bin / "clang"
+  let archiver := bin / "llvm-ar"
+  let headerRoots ← KotleanBuild.Runner.androidHeaderRoots compiler
+  let headers ← (headerRoots ++ [work / "include/lean"]).mapM
+    (fun root => KotleanBuild.Runner.directoryDigest root)
+  let headers := (← KotleanBuild.Runner.digest compiler) ++ String.join headers
   IO.println s!"Standard units: {files.size}; workers: {jobs}; selected: {selection}"
   (← IO.getStdout).flush
   let lock ← IO.FS.Handle.mk (work / ".standard.lock") .append
@@ -31,7 +34,8 @@ def main (args : List String) : IO Unit := do
   try
     let sourceHashes ← KotleanBuild.Runner.execute "cmake" <|
       #["-E", "sha256sum"] ++ files.map System.FilePath.toString
-    let archiveSignature : KotleanBuild.Signature := ⟨1, context, .androidArm64, headers, "",
+    let archiveSignature : KotleanBuild.Signature := ⟨1, context, .androidArm64, headers,
+      ← KotleanBuild.Runner.digest archiver,
       ["-O2", "-fPIC", "-ffunction-sections", "-fdata-sections"], [⟨"sources", sourceHashes⟩]⟩
     let archiveReceipt := work / "receipts/standard-archive.json"
     if selection == "all" && KotleanBuild.cacheHit archiveSignature ["libstandard.a"]
@@ -49,7 +53,7 @@ def main (args : List String) : IO Unit := do
         objects := objects.push (work / "obj" / System.FilePath.mk suffix.toString |>.withExtension "o")
       if ← (work / "libstandard.a").pathExists then IO.FS.removeFile (work / "libstandard.a")
       let _ ← KotleanBuild.Runner.runStage work archiveReceipt archiveSignature "libstandard.a" "archive"
-        (ndk / "toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-ar").toString
+        archiver.toString
         (#["rcs", (work / "libstandard.a").toString] ++ objects.map System.FilePath.toString)
     IO.println s!"Standard compilation complete: {files.size} units"
   finally

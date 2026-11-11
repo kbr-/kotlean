@@ -22,12 +22,13 @@ def main (args : List String) : IO Unit := do
   let githash ← Runner.execute (toolchain / "bin/lean").toString #["--githash"]
   IO.FS.writeFile (work / "include/githash.h") s!"#pragma once\n#define LEAN_GITHASH {Lean.Json.str githash.trimAscii.toString |>.compress}\n"
   let compiler := ndk / "toolchains/llvm/prebuilt/linux-x86_64/bin/clang++"
+  let headerRoots ← Runner.androidHeaderRoots compiler
+  let headers ← (headerRoots ++ [work / "include", libuv / "include"]).mapM
+    (fun root => Runner.directoryDigest root)
+  let runtimeHeaders ← Runner.directoryDigest (runtime / "src") fun path =>
+    ["h", "hpp", "inc", "def"].any (fun extension => path.extension == some extension)
   let context := (← Runner.digest (ndk / "source.properties")) ++
-    (← Runner.digest compiler) ++ (← Runner.digest (work / "include/lean/config.h")) ++
-    (← Runner.digest (work / "include/lean/lean.h")) ++
-    (← Runner.digest (work / "include/lean/version.h")) ++
-    (← Runner.digest (work / "include/githash.h")) ++
-    (← Runner.digest (libuv / "include/uv.h"))
+    (← Runner.digest compiler) ++ runtimeHeaders ++ String.join headers
   IO.println s!"Runtime units: {sources.size}; workers: {jobs}"
   (← IO.getStdout).flush
   let lock ← IO.FS.Handle.mk (work / ".runtime.lock") .append

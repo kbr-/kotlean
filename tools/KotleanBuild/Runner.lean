@@ -18,6 +18,27 @@ def digest (path : FilePath) : IO String := do
   let output ← execute "cmake" #["-E", "sha256sum", path.toString]
   return (output.take 64).toString
 
+def filesUnder (directory : FilePath) : IO (Array FilePath) := do
+  let files ← (← directory.walkDir).filterM fun path => do
+    return !(← path.isDir)
+  return files.qsort (fun left right => left.toString < right.toString)
+
+def directoryDigest (directory : FilePath) (includeFile : FilePath → Bool := fun _ => true) :
+    IO String := do
+  let files := (← filesUnder directory).filter includeFile
+  IO.FS.withTempFile fun handle manifest => do
+    for start in [:files.size:256] do
+      let paths := files.extract start (start + 256)
+      handle.putStr (← execute "cmake" (#["-E", "sha256sum"] ++ paths.map FilePath.toString))
+    handle.flush
+    digest manifest
+
+def androidHeaderRoots (compiler : FilePath) : IO (List FilePath) := do
+  let resource ← execute compiler.toString #["-print-resource-dir"]
+  let ndkToolchain := compiler.parent.bind FilePath.parent
+  let some ndkToolchain := ndkToolchain | throw (IO.userError "Missing NDK toolchain directory")
+  return [ndkToolchain / "sysroot/usr/include", FilePath.mk resource.trimAscii.toString / "include"]
+
 def observe (work : FilePath) (relative : String) : IO Observations := do
   let path := work / relative
   if ← path.pathExists then return [(relative, some (← digest path))]

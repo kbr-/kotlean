@@ -83,6 +83,8 @@ def main (args : List String) : IO Unit := do
         libuv / "include", toolchain / "src/lean/Init", toolchain / "src/lean/Std",
         project / "lean/.lake/build/lib/lean/KotleanBuild"] do
       emitDirectory directory
+    for directory in ← Runner.androidHeaderRoots (bin / "clang") do
+      emitDirectory directory
     return
   IO.FS.createDirAll work
   let cacheLock ← IO.FS.Handle.mk (work / ".build.lock") .append
