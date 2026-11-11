@@ -38,10 +38,18 @@ internal class AndroidRenderer(private val activity: Activity, private val send:
     fun apply(patches: List<Patch>, revision: BigInteger) {
         applying = true
         try {
+            var movesPrepared = false
             for (patch in patches) when (patch) {
                 is Patch.Create -> create(patch.id, patch.kind)
                 is Patch.SetProperty -> property(node(patch.id), patch.value)
                 is Patch.Insert -> {
+                    if (!movesPrepared) {
+                        for (move in patches.filterIsInstance<Patch.Insert>()) {
+                            val moving = node(move.child).view
+                            if (moving.parent !== node(move.parent).view) detach(moving)
+                        }
+                        movesPrepared = true
+                    }
                     val parent = node(patch.parent).view as? ViewGroup ?: error("Non-container parent")
                     val child = node(patch.child)
                     val index = patch.index.intValueExact()

@@ -19,12 +19,17 @@ def app : App := {
     | .close => (model, [⟨.platform "stop" [], none⟩, ⟨.write "after-close" [1], none⟩])
     | .touched frame => ({ model with touched := model.touched || frame.phase == .down }, [])
     | .unexpectedTimer => ({ model with fired := true }, [])
-  view := fun model => .column {}
-    [ .input { text := "fixed" }
-    , .button {
-        text := if model.fired then "Timer fired unexpectedly"
-          else if model.touched then "Close host (touch observed)" else "Close host"
-        events := { click := some .close, touch := some .touched } } ]
+  view := fun model =>
+    let label : Ui Msg := .text { text := "Host probe" }
+    let leading : List (Ui Msg) := if model.touched then [.column {} [label]]
+      else [.column {} [], label]
+    let controls : List (Ui Msg) :=
+      [ .input { text := "fixed" }
+      , .button {
+          text := if model.fired then "Timer fired unexpectedly"
+            else if model.touched then "Close host (touch observed)" else "Close host"
+          events := { click := some .close, touch := some .touched } } ]
+    .column {} (leading ++ controls)
   subscriptions := fun _ => [⟨.tick 9223372036854775807, fun _ => some .unexpectedTimer⟩]
 }
 
