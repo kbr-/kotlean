@@ -51,7 +51,7 @@ def observe (work : FilePath) (relative : String) : IO Observations := do
 
 def readManifest (path : FilePath) : IO (Option Manifest) := do
   if !(← path.pathExists) then return none
-  let text ← IO.FS.readFile path
+  let some text := String.fromUTF8? (← IO.FS.readBinFile path) | return none
   return (Lean.Json.parse text >>= Lean.fromJson?).toOption
 
 def runStage (work receipt : FilePath) (signature : Signature) (relative step command : String)

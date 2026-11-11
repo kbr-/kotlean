@@ -43,6 +43,9 @@ def main (args : List String) : IO Unit := do
   ensure (← build signature) "Missing artifact was accepted"
   IO.FS.writeFile receipt "{incomplete"
   ensure (← build signature) "Interrupted manifest was accepted"
+  IO.FS.writeBinFile receipt (ByteArray.mk #[255])
+  ensure (← build signature) "Invalid UTF-8 manifest was accepted"
+  ensure (!(← build signature)) "Replacement receipt did not become reusable"
   for changed in [
       { signature with format := 2 },
       { signature with toolchain := "other" },

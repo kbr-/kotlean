@@ -9,6 +9,21 @@ def requiredEnv (name : String) : IO String := do
   let some value ← IO.getEnv name | throw (IO.userError s!"Set {name} to the installed dependency directory")
   return value
 
+def runtimeModules (workspace : Lake.Workspace) (app : Lake.Module) : IO (Array Lake.Module) := do
+  let mut modules := #[app]
+  let mut seen : Std.HashSet Lean.Name := ({} : Std.HashSet Lean.Name).insert app.name
+  let mut cursor := 0
+  while cursor < modules.size do
+    let some module := modules[cursor]? | break
+    cursor := cursor + 1
+    let header ← Lean.parseImports' (← IO.FS.readFile module.leanFile) module.leanFile.toString
+    for imp in header.imports do
+      if imp.isMeta || seen.contains imp.module then continue
+      seen := seen.insert imp.module
+      if let some dependency := workspace.findModule? imp.module then
+        modules := modules.push dependency
+  return modules
+
 def main (args : List String) : IO Unit := do
   let (operation, package, moduleText, output) ← match args with
     | ["build", package, moduleText, output] => pure ("build", package, moduleText, output)
@@ -107,23 +122,15 @@ def main (args : List String) : IO Unit := do
     let _ ← Runner.execute "cmake" #["-E", "copy_if_different", (project / "native/android/lean/config.h").toString,
       (work / "include/lean/config.h").toString]
     let previous ← IO.currentDir
-    let mut modules := #[moduleName.toString]
+    let modules ← runtimeModules workspace app
     IO.Process.setCurrentDir package
     try
       let _ ← Runner.execute (toolchain / "bin/lake").toString #["build"]
-      let data ← Runner.execute (toolchain / "bin/lake").toString #["--json", "query", s!"+{moduleName}:transImports"]
-      let .ok imports := Lean.Json.parse data.trimAscii.toString >>= Lean.fromJson? (α := Array String)
-        | throw (IO.userError "Lake returned an invalid module-dependency result")
-      modules := modules ++ imports
       let _ ← Runner.execute (toolchain / "bin/lake").toString <|
-        #["build"] ++ modules.map (fun name => s!"+{name}:c")
+        #["build"] ++ modules.map (fun module => s!"+{module.name}:c")
     finally
       IO.Process.setCurrentDir previous
-    let mut sources : Array String := #[]
-    for name in modules do
-      let some module := workspace.findModule? name.toName
-        | throw (IO.userError s!"Lake module disappeared: {name}")
-      sources := sources.push module.cFile.toString
+    let sources := modules.map (fun module => module.cFile.toString)
     let sourceList := work / "package-sources.json"
     IO.FS.writeFile sourceList (Lean.toJson sources |>.compress)
     let initializer := Lean.mkModuleInitializationFunctionName app.name app.pkg.id? .runtime
