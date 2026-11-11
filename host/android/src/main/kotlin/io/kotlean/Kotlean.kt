@@ -25,8 +25,14 @@ import java.util.ArrayDeque
 import java.util.Collections
 import java.util.IdentityHashMap
 
+private fun deadline(milliseconds: BigInteger): Long {
+    val now = SystemClock.uptimeMillis()
+    return now + milliseconds.min(BigInteger.valueOf(Long.MAX_VALUE - now)).toLong()
+}
+
 object Kotlean {
     private const val stateKey = "io.kotlean.saved-model"
+    private var loadedLibrary: String? = null
 
     // Call after super.onCreate; the activity owns the resource and plugins. Close on the main
     // thread.
@@ -36,7 +42,14 @@ object Kotlean {
         check(activity.window.decorView.getTag(R.id.kotlean_owner) == null) { "This activity already owns a Kotlean session" }
         var host: Host? = null
         return try {
-            System.loadLibrary(library)
+            val loaded = loadedLibrary
+            check(loaded == null || loaded == library) {
+                "This process already uses Kotlean library '$loaded'; cannot start '$library'"
+            }
+            if (loaded == null) {
+                System.loadLibrary(library)
+                loadedLibrary = library
+            }
             host = Host(activity, library, plugins.toMap())
             activity.window.decorView.setTag(R.id.kotlean_owner, host)
             host.start(savedInstanceState?.getByteArray(stateKey))
@@ -129,7 +142,7 @@ object Kotlean {
                             subscriptions[value.id] = active
                             val source = value.source
                             if (source is Source.Tick) {
-                                val period = source.milliseconds.longValueExact()
+                                val period = source.milliseconds
                                 val callback = object : Runnable {
                                     override fun run() {
                                         if (closed || subscriptions[value.id] !== active) return
@@ -139,19 +152,22 @@ object Kotlean {
                                             .array()
                                         signal(value, timestamp)
                                         if (!closed && subscriptions[value.id] === active) {
-                                            handler.postAtTime(this, token, Math.addExact(SystemClock.uptimeMillis(), period))
+                                            handler.postAtTime(this, token, deadline(period))
                                         }
                                     }
                                 }
                                 active.callback = callback
-                                handler.postAtTime(callback, token, Math.addExact(SystemClock.uptimeMillis(), period))
+                                handler.postAtTime(callback, token, deadline(period))
                             }
                         }
                     }
                     if (out.value.subscriptions.isNotEmpty()) {
                         back?.update(subscriptions.values.map { it.value }.filter { it.source is Source.Back })
                     }
-                    for (request in out.value.commands) command(request)
+                    for (request in out.value.commands) {
+                        if (closed) break
+                        command(request)
+                    }
                 }
             }
         }
@@ -171,7 +187,7 @@ object Kotlean {
                 when (val effect = command.effect) {
                     is Effect.Delay -> {
                         handler.postAtTime({ answer(command.id, Reply.Ok(Bytes(byteArrayOf()))) }, token,
-                            Math.addExact(SystemClock.uptimeMillis(), effect.milliseconds.longValueExact()))
+                            deadline(effect.milliseconds))
                     }
                     is Effect.Read -> {
                         val value = storage.getString(effect.key, null) ?: error("No stored value for this key")

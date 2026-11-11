@@ -68,7 +68,8 @@ cd lean
 lake build
 ```
 
-Build the examples from the repository root with JDK 21, Gradle 9.9 and Android SDK 37. Run
+Build the examples from the repository root on Linux x86-64 with JDK 21, Gradle 9.9,
+Android SDK 37, CMake and patch. Run
 `lake build kotlean` in `lean/` and point `KOTLEAN_BUILD` to the resulting executable in
 `lean/.lake/build/bin/`. Set `KOTLEAN_TOOLCHAIN` to the installed Lean toolchain,
 `KOTLEAN_LEAN_SOURCE` to its matching source checkout, `ANDROID_NDK_HOME` to NDK r30,
@@ -101,6 +102,8 @@ Counter Activity launches.
 The design uses `init`, `update`, `view` and `subscriptions`. App-specific models and messages stay
 in Lean. A fixed byte protocol carries platform events in and view patches, commands and
 subscription changes out. Android Views render the result.
+One generated Kotlean app library can run in a process. Activities using that library have
+separate sessions.
 
 The verification contract covers codec round trips, view diff correctness, event dispatch and
 one-shot command continuations with Lean theorems. The Java Native Interface (JNI), the Kotlin
@@ -114,7 +117,8 @@ transaction buffer across the process's transactions.
 Android tick subscriptions deliver the current uptime in milliseconds as eight little-endian
 bytes. Animation can use the elapsed time between ticks, independently of callback timing.
 
-Development targets: Lean 4.34.0, Android Native Development Kit (NDK) r30, Android API 26 or later,
+Development targets: Lean 4.34.0, Android Native Development Kit (NDK) r30, Android 16 or later
+(API 36+),
 compile Software Development Kit (SDK) 37.
 
 SnackNet is a maze-chase game with an AI machine pursued by human operators. Steer by swiping,

@@ -4,7 +4,7 @@ plugins { id("com.android.library") }
 android {
     namespace = "io.kotlean"
     compileSdk = 37
-    defaultConfig { minSdk = 26 }
+    defaultConfig { minSdk = 36 }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17

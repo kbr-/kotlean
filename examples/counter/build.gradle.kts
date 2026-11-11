@@ -11,7 +11,7 @@ android {
     ndkPath = providers.environmentVariable("ANDROID_NDK_HOME").orNull
     defaultConfig {
         applicationId = "io.kotlean.counter"
-        minSdk = 26
+        minSdk = 36
         targetSdk = 37
         versionCode = 1
         versionName = "1.0"

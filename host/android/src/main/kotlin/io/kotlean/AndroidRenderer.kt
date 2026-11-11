@@ -81,7 +81,7 @@ internal class AndroidRenderer(private val activity: Activity, private val send:
             override fun beforeTextChanged(value: CharSequence?, start: Int, count: Int, after: Int) = Unit
             override fun onTextChanged(value: CharSequence?, start: Int, before: Int, count: Int) = Unit
             override fun afterTextChanged(value: Editable?) {
-                if (record.listeners.text) emit(record, Input.Text(value?.toString().orEmpty()))
+                emit(record, Input.Text(value?.toString().orEmpty()))
             }
         })
         view.addOnLayoutChangeListener { _, _, _, _, _, _, _, _, _ -> resize(record) }

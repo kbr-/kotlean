@@ -12,7 +12,7 @@ android {
     buildFeatures { buildConfig = true }
     defaultConfig {
         applicationId = "io.kotlean.snacknet"
-        minSdk = 26
+        minSdk = 36
         targetSdk = 37
         versionCode = 1
         versionName = "1.0"
