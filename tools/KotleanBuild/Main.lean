@@ -52,7 +52,7 @@ def main (args : List String) : IO Unit := do
     | throw (IO.userError s!"Unknown app module: {moduleName}")
   let some sdk := workspace.findModule? `Kotlean
     | throw (IO.userError "The app package must require Kotlean")
-  let project := sdk.pkg.dir.parent.getD sdk.pkg.dir
+  let project := sdk.pkg.dir
   let bin := ndk / "toolchains/llvm/prebuilt/linux-x86_64/bin"
   let prerequisites := [toolchain / "bin/lean", toolchain / "bin/lake", ndk / "source.properties",
     bin / "clang", bin / "clang++", bin / "ld.lld", bin / "llvm-nm", bin / "llvm-ar",

@@ -4,7 +4,7 @@ defaultTargets = ["Counter"]
 
 [[require]]
 name = "kotlean"
-path = "../../../lean"
+path = "../../.."
 
 [[lean_lib]]
 name = "Counter"

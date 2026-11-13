@@ -6,7 +6,7 @@
    "name": "kotlean",
    "manifestFile": "lake-manifest.json",
    "inherited": false,
-   "dir": "../../../lean",
+   "dir": "../../..",
    "configFile": "lakefile.toml"}],
  "name": "counter",
  "lakeDir": ".lake",
