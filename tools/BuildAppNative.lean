@@ -18,16 +18,16 @@ structure Command where
 def requirements (c : Config) : List System.FilePath := [
   c.toolchain / "bin/lake", c.toolchain / "bin/leanc", c.toolchain / "include/lean/lean.h",
   c.toolchain / "lib/lean/libleanshared.so", c.jdk / "include/jni.h", c.jdk / "include/linux/jni_md.h",
-  c.project / "lean/lakefile.toml", c.project / "native/app_jni.cpp",
+  c.project / "lakefile.toml", c.project / "native/app_jni.cpp",
   c.project / "native/include/kotlean_jni.hpp", c.project / "host/wire/src/test/cpp/app_exports.map",
   c.project / "host/wire/src/test/cpp/app_memory.cpp", c.source
 ]
 
 def commands (c : Config) : Array Command := #[
-  ⟨(c.toolchain / "bin/lake").toString, #["build", "Kotlean:static", "Kotlean.Export"], c.project / "lean"⟩,
+  ⟨(c.toolchain / "bin/lake").toString, #["build", "Kotlean:static", "Kotlean.Export"], c.project⟩,
   ⟨(c.toolchain / "bin/lake").toString,
     #["env", "lean", "--root=" ++ (c.source.parent.getD ".").toString,
-      "-c", c.output.toString ++ ".gen.c", c.source.toString], c.project / "lean"⟩,
+      "-c", c.output.toString ++ ".gen.c", c.source.toString], c.project⟩,
   ⟨"c++", #["-c", "-fPIC", "-std=c++17", "-fno-exceptions", "-fno-rtti",
     "-DKOTLEAN_INITIALIZER=" ++ c.initializer,
     "-I" ++ (c.toolchain / "include").toString,
@@ -49,7 +49,7 @@ def commands (c : Config) : Array Command := #[
       c.output.toString ++ ".probe.o",
       "-Wl,-z,defs", "-Wl,--gc-sections",
       "-Wl,--version-script=" ++ (c.project / "host/wire/src/test/cpp/app_exports.map").toString,
-      (c.project / "lean/.lake/build/lib/libkotlean_Kotlean.a").toString,
+      (c.project / ".lake/build/lib/libkotlean_Kotlean.a").toString,
       "-L" ++ (c.toolchain / "lib/lean").toString, "-lleanshared",
       "-Wl,-rpath," ++ (c.toolchain / "lib/lean").toString,
       "-o", c.output.toString ++ ".tmp"], c.project⟩

@@ -97,7 +97,7 @@ def main (args : List String) : IO Unit := do
     emit (toolchain / "lib/lean/libleanshared.so")
     for directory in [project / "native", project / "tools", runtime / "src",
         libuv / "include", toolchain / "src/lean/Init", toolchain / "src/lean/Std",
-        project / "lean/.lake/build/lib/lean/KotleanBuild"] do
+        project / ".lake/build/lib/lean/KotleanBuild"] do
       emitDirectory directory
     for directory in ← Runner.androidHeaderRoots (bin / "clang") do
       emitDirectory directory
@@ -134,7 +134,7 @@ def main (args : List String) : IO Unit := do
     let sourceList := work / "package-sources.json"
     IO.FS.writeFile sourceList (Lean.toJson sources |>.compress)
     let initializer := Lean.mkModuleInitializationFunctionName app.name app.pkg.id? .runtime
-    let libraryPath := project / "lean/.lake/build/lib/lean"
+    let libraryPath := project / ".lake/build/lib/lean"
     let run := fun script arguments => do
       let result ← IO.Process.output {
         cmd := (toolchain / "bin/lean").toString

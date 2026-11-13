@@ -16,7 +16,7 @@ def requirements (c : Config) : List System.FilePath := [
   c.toolchain / "bin/lake", c.toolchain / "bin/leanc", c.toolchain / "include/lean/lean.h",
   c.toolchain / "lib/lean/libleanshared.so", c.jdk / "include/jni.h", c.jdk / "include/linux/jni_md.h",
   c.jdk / "bin/java", c.jdk / "bin/javac",
-  c.project / "lean/lakefile.toml", c.project / "native/include/kotlean_jni.hpp",
+  c.project / "lakefile.toml", c.project / "native/include/kotlean_jni.hpp",
   c.project / "host/wire/src/test/cpp/wire_jni.cpp",
   c.project / "host/wire/src/control/java/io/kotlean/WireNative.java"
 ]
@@ -27,7 +27,7 @@ def temporary (c : Config) : System.FilePath := directory c / "libkotlean_wire_t
 
 def commands (c : Config) : Array Command := #[
   ⟨(c.toolchain / "bin/lake").toString, #["build", "KotleanTest:static", "Kotlean:static"],
-    c.project / "lean"⟩,
+    c.project⟩,
   ⟨"c++", #["-c", "-fPIC", "-std=c++17", "-fno-exceptions", "-fno-rtti",
     "-I" ++ (c.toolchain / "include").toString,
     "-I" ++ (c.jdk / "include").toString, "-I" ++ (c.jdk / "include/linux").toString,
@@ -37,8 +37,8 @@ def commands (c : Config) : Array Command := #[
   ⟨(c.toolchain / "bin/leanc").toString, #["-shared", "-fPIC",
     (directory c / "wire_jni.o").toString,
     "-Wl,-z,defs", "-Wl,--start-group",
-    (c.project / "lean/.lake/build/lib/libkotlean_KotleanTest.a").toString,
-    (c.project / "lean/.lake/build/lib/libkotlean_Kotlean.a").toString,
+    (c.project / ".lake/build/lib/libkotlean_KotleanTest.a").toString,
+    (c.project / ".lake/build/lib/libkotlean_Kotlean.a").toString,
     "-Wl,--end-group",
     "-L" ++ (c.toolchain / "lib/lean").toString, "-lleanshared",
     "-Wl,-rpath," ++ (c.toolchain / "lib/lean").toString,
