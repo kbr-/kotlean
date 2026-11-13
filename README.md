@@ -1,3 +1,5 @@
+![Kotlean logo](docs/assets/kotlean-logo.webp)
+
 # Kotlean: Android apps, proven
 
 **The code you prove is the code that runs.**
