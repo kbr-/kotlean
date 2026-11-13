@@ -155,8 +155,8 @@ cmake -S "$KOTLEAN_LIBUV_SOURCE" -B "$KOTLEAN_LIBUV_SOURCE/build" \
   -DBUILD_TESTING=OFF -DLIBUV_BUILD_TESTS=OFF -DLIBUV_BUILD_SHARED=OFF
 cmake --build "$KOTLEAN_LIBUV_SOURCE/build" --target uv_a
 
-lake -d lean build kotlean
-export KOTLEAN_BUILD="$PWD/lean/.lake/build/bin/kotlean"
+lake build kotlean
+export KOTLEAN_BUILD="$PWD/.lake/build/bin/kotlean"
 gradle --no-daemon :counter:assembleDebug :snacknet:assembleDebug
 ```
 

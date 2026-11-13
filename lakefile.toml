@@ -4,41 +4,42 @@ defaultTargets = ["Kotlean"]
 
 [[lean_lib]]
 name = "Kotlean"
+srcDir = "lean"
 
 [[lean_lib]]
 name = "KotleanTest"
-srcDir = "../host/wire/src/test/lean"
+srcDir = "host/wire/src/test/lean"
 
 [[lean_lib]]
 name = "KotleanBuild"
-srcDir = "../tools"
+srcDir = "tools"
 
 [[lean_exe]]
 name = "kotlean"
 root = "KotleanBuild.Main"
-srcDir = "../tools"
+srcDir = "tools"
 moreLinkArgs = ["-lLake"]
 
 [[lean_lib]]
 name = "ExportNat"
-srcDir = "../host/wire/src/test/lean"
+srcDir = "host/wire/src/test/lean"
 
 [[lean_lib]]
 name = "ExportText"
-srcDir = "../host/wire/src/test/lean"
+srcDir = "host/wire/src/test/lean"
 
 [[lean_lib]]
 name = "ExportFailure"
-srcDir = "../host/wire/src/test/lean"
+srcDir = "host/wire/src/test/lean"
 
 [[lean_lib]]
 name = "ExportEffects"
-srcDir = "../host/wire/src/test/lean"
+srcDir = "host/wire/src/test/lean"
 
 [[lean_lib]]
 name = "ExportHostEdges"
-srcDir = "../host/wire/src/test/lean"
+srcDir = "host/wire/src/test/lean"
 
 [[lean_lib]]
 name = "ExportMetaOnly"
-srcDir = "../host/wire/src/test/lean"
+srcDir = "host/wire/src/test/lean"
